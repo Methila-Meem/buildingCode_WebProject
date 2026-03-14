@@ -1,0 +1,10 @@
+requests
+anthropic
+pdfplumber
+pymupdf
+fastapi
+uvicorn
+python-multipart
+python-dotenv
+streamlit
+pandas
