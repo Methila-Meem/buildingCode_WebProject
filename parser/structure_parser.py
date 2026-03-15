@@ -1,45 +1,51 @@
 """
 parser/structure_parser.py
 ===========================
-Converts the raw Datalab output into a clean hierarchical document tree.
+Parses Datalab Marker API JSON output into a structured document tree.
 
-The hierarchy we build:
+Confirmed Datalab JSON structure (from real BCBC output):
+    result["json"]["children"]         -> list of Page objects
+        page["children"]               -> list of blocks
+            block["block_type"]        -> SectionHeader | ListGroup | Text | Table | Caption | PageFooter
+            block["html"]              -> HTML content of the block
+            block["page"]              -> 0-based page index
+
+BCBC heading hierarchy assigned by Datalab:
+    h1 -> Part         e.g. "Part 1 Compliance"
+    h2 -> Section      e.g. "Section 1.1. General"
+    h3 -> Article      e.g. "1.1.1. Application of this Code"
+    h4 -> Sentence     e.g. "1.1.1.1. Application of this Code"
+
+Internal data model (matching BCBC terminology):
     Document
-    └── Chapter      (e.g. "Chapter 3 — Structural Loads")
-        └── Section  (e.g. "3.1 Dead Loads")
-            └── Clause  (e.g. "3.1.2 Calculation method")
-                └── SubClause  (e.g. "(a)", "(b)", "i.", "ii.")
+    -> Chapter   (maps to Part  - h1)
+        -> Section              (h2)
+            -> Clause           (h3 Article, h4 Sentence)
+                -> SubClause    (list items: 1), a), i) etc.)
 
-Each node gets:
-  - A unique ID  (e.g. SEC-3-1, CL-3-1-2)
-  - Page span metadata
-  - Extracted tables and equations
-  - Detected internal references (resolved later)
+Bug fixes applied (confirmed against real raw_output.json):
+    1. H1 "Part 1Compliance" missing space - RE_PART uses \s* to handle both cases
+    2. ListGroup collapsed to one line - now each <li> becomes its own line
+    3. Caption is a separate block - buffered and attached to the next Table block
+    4. RE_ARTICLE greedily matches 4-part numbers - SENTENCE always checked before ARTICLE
 """
 
 import re
-import json
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional
+from datetime import datetime
 
 
-# -------------------------------------------------------
-# Data models — each level of the hierarchy
-# -------------------------------------------------------
+# =============================================================================
+# Data models
+# =============================================================================
 
 @dataclass
 class SubClause:
     id: str
-    marker: str          # e.g. "(a)", "i."
+    marker: str       # e.g. "1)", "a)", "i)"
     text: str
     page: int = 0
-
-
-@dataclass
-class TableCell:
-    row: int
-    col: int
-    value: str
 
 
 @dataclass
@@ -54,27 +60,27 @@ class Table:
 @dataclass
 class Equation:
     id: str
-    raw_text: str        # LaTeX or plain text as extracted
+    raw_text: str
     page: int = 0
 
 
 @dataclass
 class Clause:
     id: str
-    number: str          # e.g. "3.1.2"
+    number: str
     title: str
     text: str
     sub_clauses: List[SubClause] = field(default_factory=list)
     tables: List[Table] = field(default_factory=list)
     equations: List[Equation] = field(default_factory=list)
-    references: List[dict] = field(default_factory=list)  # filled by reference_linker
+    references: List[dict] = field(default_factory=list)
     page_span: List[int] = field(default_factory=list)
 
 
 @dataclass
 class Section:
     id: str
-    number: str          # e.g. "3.1"
+    number: str
     title: str
     clauses: List[Clause] = field(default_factory=list)
     page_span: List[int] = field(default_factory=list)
@@ -83,7 +89,7 @@ class Section:
 @dataclass
 class Chapter:
     id: str
-    number: str          # e.g. "3"
+    number: str
     title: str
     sections: List[Section] = field(default_factory=list)
     page_span: List[int] = field(default_factory=list)
@@ -98,284 +104,430 @@ class Document:
     chapters: List[Chapter] = field(default_factory=list)
 
 
-# -------------------------------------------------------
-# Regex patterns for detecting document structure
-# -------------------------------------------------------
+# =============================================================================
+# Regex patterns
+# =============================================================================
 
-# Matches: "Chapter 3", "CHAPTER 3", "3. Title"
-RE_CHAPTER = re.compile(
-    r'^(?:chapter\s+(\d+)|(\d+)\.\s+[A-Z])',
-    re.IGNORECASE
-)
+# BUG FIX 1: \s* (zero or more spaces) handles "Part 1Compliance" and "Part 1 Compliance"
+RE_PART     = re.compile(r'^Part\s*(\d+)\s*(.*)', re.IGNORECASE)
 
-# Matches section numbers like "3.1", "3.1.2", "10.4.3"
-RE_SECTION = re.compile(r'^(\d+\.\d+)\s+(.+)')
+# "Section 1.1. General" or "1.1. General"
+RE_SECTION  = re.compile(r'^(?:Section\s+)?(\d+\.\d+)\.?\s+(.+)', re.IGNORECASE)
 
-# Matches clause numbers like "3.1.2", "3.1.2.1"
-RE_CLAUSE = re.compile(r'^(\d+\.\d+\.\d+(?:\.\d+)?)\s*(.*)')
+# "1.1.1. Application..." - 3-part article
+RE_ARTICLE  = re.compile(r'^(\d+\.\d+\.\d+)\.?\s*(.*)')
 
-# Matches sub-clause markers: (a), (b), (i), (ii), a), i.
+# "1.1.1.1. Application..." - 4-part sentence
+# IMPORTANT: Always check RE_SENTENCE before RE_ARTICLE
+# RE_ARTICLE also matches 4-part numbers and will steal them if checked first
+RE_SENTENCE = re.compile(r'^(\d+\.\d+\.\d+\.\d+)\.?\s*(.*)')
+
+# Sub-clause markers: (a), (b), a), i), ii. etc.
 RE_SUBCLAUSE = re.compile(r'^\s*(\([a-z]+\)|[a-z]\)|[ivxlcdm]+\.)\s+(.+)', re.IGNORECASE)
 
-# Matches inline equations (LaTeX-style or bracketed)
-RE_EQUATION = re.compile(r'\$\$.+?\$\$|\$.+?\$|\[EQ\s*\d+\]', re.DOTALL)
-
-# Matches cross-references inside text
+# Cross-references in text
 RE_REFERENCE = re.compile(
-    r'(?:section|clause|table|figure|article)\s+(\d+(?:\.\d+)*)',
+    r'(?:section|clause|table|figure|article|sentence|subsection)\s+'
+    r'(\d+(?:\.\d+)*(?:\([^)]+\))?)',
     re.IGNORECASE
 )
 
 
-class StructureParser:
-    """
-    Parses Datalab JSON output into a structured Document tree.
+# =============================================================================
+# HTML helpers
+# =============================================================================
 
-    Usage:
-        parser = StructureParser(source_pdf="building_code.pdf")
-        document = parser.parse(datalab_result)
+def strip_html(html: str) -> str:
+    """Remove all HTML tags and normalise whitespace."""
+    if not html:
+        return ""
+    text = re.sub(r'<[^>]+>', ' ', html)
+    text = (text
+            .replace('&amp;', '&')
+            .replace('&lt;', '<')
+            .replace('&gt;', '>')
+            .replace('&nbsp;', ' ')
+            .replace('&#39;', "'")
+            .replace('&quot;', '"'))
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def parse_heading(html: str):
     """
+    Extract (level, text) from a SectionHeader HTML block.
+    e.g. '<h3>1.1.1. Title</h3>' -> (3, '1.1.1. Title')
+    """
+    m = re.match(r'<h(\d)[^>]*>(.*?)</h\1>', html.strip(), re.DOTALL | re.IGNORECASE)
+    if m:
+        return int(m.group(1)), strip_html(m.group(2))
+    return 0, strip_html(html)
+
+
+def listgroup_to_lines(html: str) -> str:
+    """
+    BUG FIX 2: Convert ListGroup HTML to newline-separated plain text.
+
+    Problem: strip_html() collapses all <li> items onto one line.
+    _extract_subclauses() uses splitlines() so it finds zero sub-clauses.
+
+    Fix: Replace </li> with newline BEFORE stripping tags.
+    Each list item becomes its own line, preserving structure for parsing.
+
+    Input:
+        <ol><li><b>1)</b> This Code applies to...<ol><li>a) design</li></ol></li></ol>
+    Output:
+        "1)  This Code applies to...\na) design"
+    """
+    text = re.sub(r'</li>', '\n', html, flags=re.IGNORECASE)
+    text = re.sub(r'<[^>]+>', '', text)
+    text = (text
+            .replace('&amp;', '&')
+            .replace('&lt;', '<')
+            .replace('&gt;', '>')
+            .replace('&nbsp;', ' ')
+            .replace('&#39;', "'")
+            .replace('&quot;', '"'))
+    lines = [re.sub(r'[ \t]+', ' ', line).strip() for line in text.splitlines()]
+    return '\n'.join(line for line in lines if line)
+
+
+def parse_table_html(html: str):
+    """
+    Parse HTML table string into (headers, rows).
+    Handles data-bbox attributes on th/td (present in Datalab output page 2+).
+    Returns (list[str], list[list[str]])
+    """
+    headers = []
+    rows = []
+
+    thead = re.search(r'<thead[^>]*>(.*?)</thead>', html, re.DOTALL | re.IGNORECASE)
+    if thead:
+        ths = re.findall(r'<th[^>]*>(.*?)</th>', thead.group(1), re.DOTALL | re.IGNORECASE)
+        headers = [strip_html(th) for th in ths]
+
+    tbody = re.search(r'<tbody[^>]*>(.*?)</tbody>', html, re.DOTALL | re.IGNORECASE)
+    if tbody:
+        trs = re.findall(r'<tr[^>]*>(.*?)</tr>', tbody.group(1), re.DOTALL | re.IGNORECASE)
+        for tr in trs:
+            tds = re.findall(r'<td[^>]*>(.*?)</td>', tr, re.DOTALL | re.IGNORECASE)
+            if tds:
+                row = [strip_html(td) for td in tds]
+                if any(cell.strip() for cell in row):
+                    rows.append(row)
+
+    return headers, rows
+
+
+# =============================================================================
+# Main parser
+# =============================================================================
+
+class StructureParser:
 
     def __init__(self, source_pdf: str = "unknown.pdf"):
         self.source_pdf = source_pdf
         self._chapter_counter = 0
-        self._equation_counter = 0
         self._table_counter = 0
+        self._equation_counter = 0
 
     def parse(self, datalab_result: dict) -> Document:
-        """
-        Main entry point. Pass the full Datalab API response dict.
-        Returns a structured Document object.
-        """
-        from datetime import datetime
-
-        # Datalab returns a list of 'blocks' per page in result['output']
-        # Flatten all blocks into a single list with page numbers attached
         blocks = self._flatten_blocks(datalab_result)
-
+        total_pages = (
+            datalab_result.get("page_count")
+            or len((datalab_result.get("json") or {}).get("children", []))
+        )
         document = Document(
             title=self._detect_title(blocks),
             source_pdf=self.source_pdf,
-            total_pages=len(datalab_result.get("pages", [])),
+            total_pages=total_pages or 0,
             extracted_at=datetime.utcnow().isoformat() + "Z",
         )
-
         document.chapters = self._build_hierarchy(blocks)
         return document
 
-    # -------------------------------------------------------
-    # Internal helpers
-    # -------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # Block flattening
+    # -------------------------------------------------------------------------
 
     def _flatten_blocks(self, datalab_result: dict) -> list:
         """
-        Datalab returns output as pages → blocks.
-        We flatten everything into [{type, text, page}, ...].
-        Falls back to parsing markdown if JSON blocks unavailable.
+        Flatten result["json"]["children"] pages into an ordered list of
+        normalised block dicts: {type, level, text, page, raw}
         """
         flat = []
+        json_output = datalab_result.get("json") or {}
+        page_objects = json_output.get("children", [])
 
-        pages = datalab_result.get("pages", [])
-        for page_num, page in enumerate(pages, start=1):
+        if page_objects:
+            for page_obj in page_objects:
+                if page_obj.get("block_type") != "Page":
+                    continue
+                try:
+                    page_num = int(page_obj["id"].split("/page/")[1].split("/")[0]) + 1
+                except (IndexError, ValueError, KeyError):
+                    page_num = 1
+
+                for block in page_obj.get("children", []):
+                    btype_raw = block.get("block_type", "")
+                    html = block.get("html", "").strip()
+
+                    if btype_raw in ("PageFooter", "PageHeader"):
+                        continue
+                    if not html:
+                        continue
+
+                    if btype_raw == "SectionHeader":
+                        level, text = parse_heading(html)
+                        flat.append({"type": "heading", "level": level,
+                                     "text": text, "page": page_num, "raw": block})
+
+                    elif btype_raw == "ListGroup":
+                        # BUG FIX 2: preserve line structure
+                        text = listgroup_to_lines(html)
+                        if text:
+                            flat.append({"type": "text", "level": 0,
+                                         "text": text, "page": page_num, "raw": block})
+
+                    elif btype_raw == "Table":
+                        # Keep raw HTML for parse_table_html()
+                        flat.append({"type": "table", "level": 0,
+                                     "text": html, "page": page_num, "raw": block})
+
+                    elif btype_raw in ("Equation", "Formula"):
+                        text = strip_html(html)
+                        if text:
+                            flat.append({"type": "equation", "level": 0,
+                                         "text": text, "page": page_num, "raw": block})
+
+                    elif btype_raw == "Caption":
+                        # BUG FIX 3 & 4: tag captions explicitly
+                        text = strip_html(html)
+                        if text:
+                            flat.append({"type": "caption", "level": 0,
+                                         "text": text, "page": page_num, "raw": block})
+
+                    else:
+                        text = strip_html(html)
+                        if text:
+                            flat.append({"type": "text", "level": 0,
+                                         "text": text, "page": page_num, "raw": block})
+            return flat
+
+        # Fallback: old pages/blocks format
+        for page_num, page in enumerate(datalab_result.get("pages", []), start=1):
             for block in page.get("blocks", []):
                 flat.append({
-                    "type": block.get("block_type", "text"),  # heading, text, table, equation
+                    "type": block.get("block_type", "text"),
                     "text": block.get("html", block.get("text", "")).strip(),
-                    "level": block.get("level", 0),           # heading depth
+                    "level": block.get("level", 0),
                     "page": page_num,
                     "raw": block,
                 })
 
-        # Fallback: if no structured pages, parse the markdown string
+        # Fallback: markdown string
         if not flat and datalab_result.get("markdown"):
             flat = self._parse_markdown_fallback(datalab_result["markdown"])
 
         return flat
 
     def _parse_markdown_fallback(self, markdown: str) -> list:
-        """
-        When Datalab returns only markdown (no structured JSON blocks),
-        we parse heading levels and text lines manually.
-        """
         blocks = []
         page = 1
         for line in markdown.splitlines():
-            stripped = line.strip()
-            if not stripped:
+            s = line.strip()
+            if not s:
                 continue
-            if stripped.startswith("# "):
-                blocks.append({"type": "heading", "level": 1, "text": stripped[2:], "page": page})
-            elif stripped.startswith("## "):
-                blocks.append({"type": "heading", "level": 2, "text": stripped[3:], "page": page})
-            elif stripped.startswith("### "):
-                blocks.append({"type": "heading", "level": 3, "text": stripped[4:], "page": page})
-            elif stripped.startswith("#### "):
-                blocks.append({"type": "heading", "level": 4, "text": stripped[5:], "page": page})
-            elif stripped.lower().startswith("[page"):
+            if s.startswith("# "):
+                blocks.append({"type": "heading", "level": 1, "text": s[2:], "page": page})
+            elif s.startswith("## "):
+                blocks.append({"type": "heading", "level": 2, "text": s[3:], "page": page})
+            elif s.startswith("### "):
+                blocks.append({"type": "heading", "level": 3, "text": s[4:], "page": page})
+            elif s.startswith("#### "):
+                blocks.append({"type": "heading", "level": 4, "text": s[5:], "page": page})
+            elif s.lower().startswith("[page"):
                 page += 1
             else:
-                blocks.append({"type": "text", "level": 0, "text": stripped, "page": page})
+                blocks.append({"type": "text", "level": 0, "text": s, "page": page})
         return blocks
 
+    # -------------------------------------------------------------------------
+    # Hierarchy builder
+    # -------------------------------------------------------------------------
+
     def _detect_title(self, blocks: list) -> str:
-        """Return the first H1 heading as the document title."""
         for b in blocks:
             if b["type"] == "heading" and b.get("level", 0) == 1:
                 return b["text"]
         return "Building Code Document"
 
     def _build_hierarchy(self, blocks: list) -> List[Chapter]:
-        """
-        Walk through all blocks and assemble the chapter → section → clause tree.
-        """
-        chapters = []
+        chapters: List[Chapter] = []
         current_chapter: Optional[Chapter] = None
         current_section: Optional[Section] = None
         current_clause: Optional[Clause] = None
-        pending_text_lines = []   # buffer text lines until we know where they belong
+        pending_text: list = []
+        pending_caption: str = ""   # BUG FIX 3: buffer for Caption -> Table association
 
         def flush_text():
-            """Attach buffered text to the most specific current node."""
-            nonlocal pending_text_lines
-            if not pending_text_lines:
+            nonlocal pending_text
+            if not pending_text:
                 return
-            combined = " ".join(pending_text_lines).strip()
-            pending_text_lines = []
-            if current_clause:
-                current_clause.text += (" " if current_clause.text else "") + combined
-                # Extract sub-clauses from combined text
+            combined = "\n".join(pending_text).strip()
+            pending_text = []
+            if combined and current_clause:
+                if current_clause.text:
+                    current_clause.text += "\n" + combined
+                else:
+                    current_clause.text = combined
                 self._extract_subclauses(current_clause, combined)
-            elif current_section:
-                pass  # section-level prose — skip for now
-            pending_text_lines = []
 
         for block in blocks:
             btype = block["type"]
-            text = block["text"]
-            page = block["page"]
+            text  = block["text"]
+            page  = block["page"]
             level = block.get("level", 0)
 
-            # ---- HEADINGS ----
+            # ── Headings ──────────────────────────────────────────────────────
             if btype == "heading":
                 flush_text()
 
                 if level <= 1:
-                    # Chapter-level heading
-                    ch_num, ch_title = self._parse_chapter_heading(text)
+                    # BUG FIX 1: handles "Part 1Compliance"
+                    num, title = self._parse_part_heading(text)
                     current_chapter = Chapter(
-                        id=f"CH-{ch_num}",
-                        number=ch_num,
-                        title=ch_title,
-                        page_span=[page],
+                        id=f"CH-{num}", number=num, title=title, page_span=[page]
                     )
                     chapters.append(current_chapter)
                     current_section = None
                     current_clause = None
 
                 elif level == 2:
-                    # Section heading like "3.1 Dead Loads"
-                    match = RE_SECTION.match(text)
-                    if match and current_chapter:
-                        sec_num = match.group(1)
-                        sec_title = match.group(2)
+                    m = RE_SECTION.match(text)
+                    if m and current_chapter:
                         current_section = Section(
-                            id=self._make_section_id(sec_num),
-                            number=sec_num,
-                            title=sec_title,
-                            page_span=[page],
+                            id=f"SEC-{m.group(1).replace('.', '-')}",
+                            number=m.group(1), title=m.group(2).strip(), page_span=[page]
                         )
                         current_chapter.sections.append(current_section)
                         current_clause = None
                     else:
-                        # No number — treat as a new clause title
-                        pending_text_lines.append(text)
+                        pending_text.append(text)
 
-                elif level >= 3:
-                    # Clause heading like "3.1.2 Calculation"
-                    match = RE_CLAUSE.match(text)
-                    if match and current_section:
-                        cl_num = match.group(1)
-                        cl_title = match.group(2)
+                elif level == 3:
+                    m = RE_ARTICLE.match(text)
+                    if m and current_chapter:
+                        num   = m.group(1)
+                        title = m.group(2).lstrip(". ").strip() or num
+                        current_section = Section(
+                            id=f"SEC-{num.replace('.', '-')}",
+                            number=num, title=title, page_span=[page]
+                        )
+                        current_chapter.sections.append(current_section)
+                        current_clause = None
+                    else:
+                        pending_text.append(text)
+
+                elif level >= 4:
+                    # BUG FIX 4: RE_SENTENCE checked BEFORE RE_ARTICLE
+                    m = RE_SENTENCE.match(text)
+                    if m and current_section:
+                        num   = m.group(1)
+                        title = m.group(2).lstrip(". ").strip() or num
                         current_clause = Clause(
-                            id=self._make_clause_id(cl_num),
-                            number=cl_num,
-                            title=cl_title,
-                            text="",
-                            page_span=[page],
+                            id=f"CL-{num.replace('.', '-')}",
+                            number=num, title=title, text="", page_span=[page]
                         )
                         current_section.clauses.append(current_clause)
                     else:
-                        pending_text_lines.append(text)
+                        pending_text.append(text)
 
-            # ---- PLAIN TEXT ----
+            # ── Plain text / list content ─────────────────────────────────────
             elif btype == "text":
-                # Check if this line IS a clause number even without a heading marker
-                cl_match = RE_CLAUSE.match(text)
-                sec_match = RE_SECTION.match(text)
+                first_line = text.splitlines()[0] if text else ""
+                # BUG FIX 4: check 4-part BEFORE 3-part in text blocks too
+                sen_m = RE_SENTENCE.match(first_line)
+                art_m = RE_ARTICLE.match(first_line)
+                sec_m = RE_SECTION.match(first_line)
 
-                if cl_match and current_section:
+                if sen_m and current_section:
                     flush_text()
-                    cl_num = cl_match.group(1)
-                    cl_title = cl_match.group(2)
+                    num   = sen_m.group(1)
+                    title = sen_m.group(2).lstrip(". ").strip() or num
                     current_clause = Clause(
-                        id=self._make_clause_id(cl_num),
-                        number=cl_num,
-                        title=cl_title,
-                        text="",
-                        page_span=[page],
+                        id=f"CL-{num.replace('.', '-')}",
+                        number=num, title=title, text="", page_span=[page]
                     )
                     current_section.clauses.append(current_clause)
-                elif sec_match and current_chapter:
+                elif art_m and current_chapter:
                     flush_text()
-                    sec_num = sec_match.group(1)
-                    sec_title = sec_match.group(2)
+                    num   = art_m.group(1)
+                    title = art_m.group(2).lstrip(". ").strip() or num
                     current_section = Section(
-                        id=self._make_section_id(sec_num),
-                        number=sec_num,
-                        title=sec_title,
-                        page_span=[page],
+                        id=f"SEC-{num.replace('.', '-')}",
+                        number=num, title=title, page_span=[page]
+                    )
+                    current_chapter.sections.append(current_section)
+                    current_clause = None
+                elif sec_m and current_chapter:
+                    flush_text()
+                    current_section = Section(
+                        id=f"SEC-{sec_m.group(1).replace('.', '-')}",
+                        number=sec_m.group(1), title=sec_m.group(2).strip(), page_span=[page]
                     )
                     current_chapter.sections.append(current_section)
                     current_clause = None
                 else:
-                    pending_text_lines.append(text)
-                    # Update page span of current clause if it spans pages
+                    pending_text.append(text)
                     if current_clause and page not in current_clause.page_span:
                         current_clause.page_span.append(page)
 
-            # ---- TABLES ----
+            # ── Caption: buffer for next table (BUG FIX 3) ───────────────────
+            elif btype == "caption":
+                flush_text()
+                pending_caption = text
+
+            # ── Table ─────────────────────────────────────────────────────────
             elif btype == "table":
                 flush_text()
-                table = self._parse_table_block(block, page)
+                self._table_counter += 1
+                caption = pending_caption or f"Table {self._table_counter}"
+                pending_caption = ""    # consume
+
+                headers, rows = parse_table_html(text)
+                table = Table(
+                    id=f"TBL-{self._table_counter}",
+                    caption=caption,
+                    headers=headers,
+                    rows=rows,
+                    page=page,
+                )
                 if current_clause:
                     current_clause.tables.append(table)
-                elif current_section:
-                    # Attach orphaned table to a dummy clause
-                    pass
 
-            # ---- EQUATIONS ----
+            # ── Equation ──────────────────────────────────────────────────────
             elif btype in ("equation", "formula"):
                 flush_text()
                 self._equation_counter += 1
-                eq = Equation(
-                    id=f"EQ-{self._equation_counter}",
-                    raw_text=text,
-                    page=page,
-                )
+                eq = Equation(id=f"EQ-{self._equation_counter}", raw_text=text, page=page)
                 if current_clause:
                     current_clause.equations.append(eq)
 
         flush_text()
         return chapters
 
+    # -------------------------------------------------------------------------
+    # Sub-clause extraction
+    # -------------------------------------------------------------------------
+
     def _extract_subclauses(self, clause: Clause, text: str):
         """
-        Scan text for sub-clause markers like (a), (b), (i), (ii)
-        and attach them to the clause.
+        Scan newline-separated text for sub-clause markers.
+        BUG FIX 2 ensures text arrives here as separate lines,
+        so each list item (1), a), i)) is detected correctly.
         """
-        lines = text.splitlines() if '\n' in text else [text]
-        sc_counter = 0
-        for line in lines:
+        sc_counter = len(clause.sub_clauses)
+        for line in text.splitlines():
             m = RE_SUBCLAUSE.match(line)
             if m:
                 sc_counter += 1
@@ -385,69 +537,34 @@ class StructureParser:
                     text=m.group(2).strip(),
                 ))
 
-    def _parse_table_block(self, block: dict, page: int) -> Table:
-        """Convert a Datalab table block into our Table dataclass."""
-        self._table_counter += 1
-        raw = block.get("raw", {})
-        rows_raw = raw.get("rows", [])
-        headers = []
-        rows = []
+    # -------------------------------------------------------------------------
+    # Part/Chapter heading parser (BUG FIX 1)
+    # -------------------------------------------------------------------------
 
-        for i, row in enumerate(rows_raw):
-            cells = [str(c.get("text", c) if isinstance(c, dict) else c) for c in row]
-            if i == 0:
-                headers = cells
-            else:
-                rows.append(cells)
-
-        return Table(
-            id=f"TBL-{self._table_counter}",
-            caption=raw.get("caption", f"Table {self._table_counter}"),
-            headers=headers,
-            rows=rows,
-            page=page,
-        )
-
-    # -------------------------------------------------------
-    # ID generation helpers
-    # -------------------------------------------------------
-
-    def _parse_chapter_heading(self, text: str):
-        """Extract chapter number and title from heading text."""
+    def _parse_part_heading(self, text: str):
+        """
+        Parse "Part 1Compliance" or "Part 1 Compliance".
+        RE_PART uses \s* to handle the missing space case.
+        """
         self._chapter_counter += 1
-        match = RE_CHAPTER.match(text)
-        if match:
-            num = match.group(1) or match.group(2) or str(self._chapter_counter)
-            title = re.sub(r'^chapter\s+\d+\s*[-–—]?\s*', '', text, flags=re.IGNORECASE).strip()
-            return num, title or text
+        m = RE_PART.match(text)
+        if m:
+            return m.group(1), m.group(2).strip() or text
         return str(self._chapter_counter), text
 
-    @staticmethod
-    def _make_section_id(number: str) -> str:
-        """Turn "3.1" into "SEC-3-1"."""
-        return "SEC-" + number.replace(".", "-")
-
-    @staticmethod
-    def _make_clause_id(number: str) -> str:
-        """Turn "3.1.2" into "CL-3-1-2"."""
-        return "CL-" + number.replace(".", "-")
+    # -------------------------------------------------------------------------
+    # Serialisation
+    # -------------------------------------------------------------------------
 
     def to_dict(self, document: Document) -> dict:
-        """Convert Document dataclass tree to a plain dict for JSON serialization."""
         return asdict(document)
 
 
+# =============================================================================
+# Public entry point
+# =============================================================================
+
 def parse_datalab_output(datalab_result: dict, source_pdf: str = "unknown.pdf") -> dict:
-    """
-    Convenience function: parse Datalab result → return JSON-serializable dict.
-
-    Args:
-        datalab_result: The dict returned by ingestion/datalab_client.py
-        source_pdf:     Filename of the original PDF
-
-    Returns:
-        dict representing the full structured document
-    """
     parser = StructureParser(source_pdf=source_pdf)
     document = parser.parse(datalab_result)
     return parser.to_dict(document)

@@ -1,0 +1,291 @@
+{
+  "title": "Part 1Compliance",
+  "source_pdf": "bcbc_2024_sample_31-33.pdf",
+  "total_pages": 3,
+  "extracted_at": "2026-03-14T09:06:56.641137Z",
+  "chapters": [
+    {
+      "id": "CH-1",
+      "number": "1",
+      "title": "Compliance",
+      "sections": [
+        {
+          "id": "SEC-1-1",
+          "number": "1.1",
+          "title": "General",
+          "clauses": [],
+          "page_span": [
+            1
+          ]
+        },
+        {
+          "id": "SEC-1-1-1",
+          "number": "1.1.1",
+          "title": "Application of this Code",
+          "clauses": [
+            {
+              "id": "CL-1-1-1-1",
+              "number": "1.1.1.1",
+              "title": "Application of this Code",
+              "text": "1) This Code applies to any one or more of the following:a) the design and construction of a new building,\nb) the occupancy of any building,\nc) a change in occupancy of any building,\nd) an alteration of any building,\ne) an addition to any building,\nf) the demolition of any building,\ng) the reconstruction of any building that has been damaged by fire, earthquake or other cause,\nh) the correction of an unsafe condition in or about any building,\ni) all parts of any building that are affected by a change in occupancy,\nj) the work necessary to ensure safety in parts of a buildingi) that remain after a demolition,\nii) that are affected by but that are not directly involved in alterations, or\niii) that are affected by but not directly involved in additions,\nk) except as permitted by the British Columbia Fire Code, the installation, replacement, or alteration of materials or equipment regulated by this Code,\nl) the work necessary to ensure safety in a relocated building during and after relocation,\nm) safety during construction of a building, including protection of the public,\nn) the design, installation, extension, alteration, renewal or repair of plumbing systems, and\no) the alteration, rehabilitation and change of occupancy of heritage buildings.\n2) This Code does not apply to the following:a) sewage, water, electrical, telephone, rail or similar public infrastructure systems located in a street or a public transit right of way,\nb) utility towers and poles, and television, radio and other communication aerials and towers, except for loads resulting from their being located on or attached to buildings,\nc) mechanical or other equipment and appliances not specifically regulated in these regulations,\nd) flood control and hydro electric dams and structures,\ne) accessory buildings less than 10 m2 in building area that do not create a hazard,\nf) with the permission of the authority having jurisdiction, temporary buildings including\ni) construction site offices,\nii) seasonal storage buildings,\niii) special events facilities,\niv) emergency facilities, and\nv) similar structures,\ng) factory built housing and components complying with CSA-Z240 MH Series standard, but this exemption does not extend to on site preparations (siting, foundations, mountings), connection to services and installation of appliances, and\nh) areas that are specifically exempted from provincial building regulations by provincial or federal enactments.\n3) This Code applies to both site-built and factory-constructed buildings . (See Note A-1.1.1.1.(3).)\n4) Farm buildings shall conform to the requirements in the National Farm Building Code of Canada 1995.\n5) For heritage buildings , the Alternate Compliance Methods for Heritage Buildings in Table 1.1.1.1.(5) may be substituted for requirements contained elsewhere in this Code. (See Note A-1.1.1.1.(5).)",
+              "sub_clauses": [
+                {
+                  "id": "CL-1-1-1-1-SC1",
+                  "marker": "b)",
+                  "text": "the occupancy of any building,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC2",
+                  "marker": "c)",
+                  "text": "a change in occupancy of any building,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC3",
+                  "marker": "d)",
+                  "text": "an alteration of any building,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC4",
+                  "marker": "e)",
+                  "text": "an addition to any building,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC5",
+                  "marker": "f)",
+                  "text": "the demolition of any building,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC6",
+                  "marker": "g)",
+                  "text": "the reconstruction of any building that has been damaged by fire, earthquake or other cause,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC7",
+                  "marker": "h)",
+                  "text": "the correction of an unsafe condition in or about any building,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC8",
+                  "marker": "i)",
+                  "text": "all parts of any building that are affected by a change in occupancy,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC9",
+                  "marker": "j)",
+                  "text": "the work necessary to ensure safety in parts of a buildingi) that remain after a demolition,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC10",
+                  "marker": "k)",
+                  "text": "except as permitted by the British Columbia Fire Code, the installation, replacement, or alteration of materials or equipment regulated by this Code,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC11",
+                  "marker": "l)",
+                  "text": "the work necessary to ensure safety in a relocated building during and after relocation,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC12",
+                  "marker": "m)",
+                  "text": "safety during construction of a building, including protection of the public,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC13",
+                  "marker": "n)",
+                  "text": "the design, installation, extension, alteration, renewal or repair of plumbing systems, and",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC14",
+                  "marker": "o)",
+                  "text": "the alteration, rehabilitation and change of occupancy of heritage buildings.",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC15",
+                  "marker": "b)",
+                  "text": "utility towers and poles, and television, radio and other communication aerials and towers, except for loads resulting from their being located on or attached to buildings,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC16",
+                  "marker": "c)",
+                  "text": "mechanical or other equipment and appliances not specifically regulated in these regulations,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC17",
+                  "marker": "d)",
+                  "text": "flood control and hydro electric dams and structures,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC18",
+                  "marker": "e)",
+                  "text": "accessory buildings less than 10 m2 in building area that do not create a hazard,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC19",
+                  "marker": "f)",
+                  "text": "with the permission of the authority having jurisdiction, temporary buildings including",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC20",
+                  "marker": "i)",
+                  "text": "construction site offices,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC21",
+                  "marker": "v)",
+                  "text": "similar structures,",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC22",
+                  "marker": "g)",
+                  "text": "factory built housing and components complying with CSA-Z240 MH Series standard, but this exemption does not extend to on site preparations (siting, foundations, mountings), connection to services and installation of appliances, and",
+                  "page": 0
+                },
+                {
+                  "id": "CL-1-1-1-1-SC23",
+                  "marker": "h)",
+                  "text": "areas that are specifically exempted from provincial building regulations by provincial or federal enactments.",
+                  "page": 0
+                }
+              ],
+              "tables": [
+                {
+                  "id": "TBL-1",
+                  "caption": "Table 1.1.1.1.(5) Alternate Compliance Methods for Heritage Buildings Forming Part of Sentence 1.1.1.1.(5)",
+                  "headers": [
+                    "No.",
+                    "Code Requirement in Division B",
+                    "Alternate Compliance Method"
+                  ],
+                  "rows": [
+                    [
+                      "1",
+                      "Fire Separations Sentence 3.1.3.1.(1), Table 3.1.3.1., Subsection 9.10.9. 2 h fire separation required between some major occupancies .",
+                      "Except for F1 occupancies , 1 h fire separation is acceptable, provided the building is sprinklered ."
+                    ],
+                    [
+                      "2",
+                      "Fire Separations Sentence 3.1.3.1.(1), Table 3.1.3.1., Subsection 9.10.9. 1 h fire separation required between some major occupancies .",
+                      "30 min fire separation is acceptable if the building is sprinklered ."
+                    ],
+                    [
+                      "3",
+                      "Noncombustible Construction Subsection 3.1.5., Article 9.10.6.1. All materials used in noncombustible construction must be noncombustible unless otherwise permitted.",
+                      "1. Roofs may be of combustible construction provided the building is sprinklered . 2. Up to 10% gross floor area to a maximum of 10% of any one floor area may be of combustible construction provided the building is sprinklered ."
+                    ],
+                    [
+                      "4",
+                      "Fire-resistance Rating Sentence 3.1.7.1.(1), Article 9.10.3.1. Where a material, assembly of materials or structural",
+                      "A fire-resistance rating may also be used based on: (a) HUD No. 8 Guideline on Fire Ratings of Archaic Materials and Assemblies., (b) Fire Endurance of Protected Steel Columns and Beams, DBR Technical Paper No. 194.,"
+                    ]
+                  ],
+                  "page": 2
+                },
+                {
+                  "id": "TBL-2",
+                  "caption": "Table 1.1.1.1.(5) (continued)",
+                  "headers": [
+                    "No.",
+                    "Code Requirement in Division B",
+                    "Alternate Compliance Method"
+                  ],
+                  "rows": [
+                    [
+                      "",
+                      "member is required to have a fire-resistance rating it shall be tested in accordance with CAN/ULC-S101, \"Fire Endurance Tests of Building Construction Materials.\"",
+                      "(c) Fire Endurance of Unit Masonry Walls, DBR Technical Paper No. 207, (d) Fire Endurance of Light-Framed and Miscellaneous Assemblies, DBR Technical Paper No. 222."
+                    ],
+                    [
+                      "5",
+                      "Rating of Supporting Construction Article 3.1.7.5., Article 9.10.8.3. Supporting assemblies to have fire-resistance rating at least equivalent to that of the supported floor.",
+                      "Heavy timber construction is permitted to have a fire-resistance rating less than would be required by the Code provided the building : (a) is sprinklered , and (b) does not exceed 6 storeys in building height ."
+                    ],
+                    [
+                      "6",
+                      "Continuity of Fire Separations Sentence 3.1.8.3.(1), Sentence 3.1.8.3.(2), Article 9.10.9.2. Fire separations are required to be continuous above the ceiling space.",
+                      "Fire separations are not required to be continuous above a ceiling space where (a) the ceiling space is noncombustible construction , (b) both fire compartments are sprinklered , or (c) the ceiling has a minimum rating of 30 minutes."
+                    ],
+                    [
+                      "7",
+                      "Wired Glass Sentence 3.1.8.5.(1), Sentence 3.1.8.14.(2), Article 9.10.13.1., Article 9.10.13.5. 6 mm wired glass in steel frame required in fire separations .",
+                      "For fixed transoms or sidelights, 6 mm wired glass fixed to a wood frame of at least 50 mm thickness with steel stops is permitted in a required fire separation ."
+                    ],
+                    [
+                      "8",
+                      "Mezzanines Sentence 3.2.1.1.(4) and Sentence 3.2.1.1.(7), Article 9.10.4.1. Mezzanines enclosing more than 10% above the horizontal plane are considered as storey in building height .",
+                      "Enclosed mezzanines may be up to 40% of the storey in which they occur and not be considered a storey in building height if the building is sprinklered ."
+                    ],
+                    [
+                      "9",
+                      "Building Height Article 3.2.2.20. to Article 3.2.2.90. Noncombustible construction required for some buildings .",
+                      "Buildings may be of combustible construction up to 6 storeys provided: (a) the building is sprinklered , (b) the building contains Group C, D, E, F, Division 2 or F, Division 3 occupancies , and (c) floor assemblies not required to exceed 1 h fire separation requirements may be of heavy timber construction ."
+                    ],
+                    [
+                      "10",
+                      "Spatial Separation Subsection 3.2.3., Subsection 9.10.14. The area of unprotected opening shall not exceed the limits in Tables 3.2.3.1.A to Table 3.2.3.1.E",
+                      "The area of unprotected opening is not limited provided: (a) the limiting distance is a minimum 1 m, (b) the building has a supervised sprinkler system in conformance with Sentence 3.2.4.9.(3), and (c) the sprinkler system is connected to the fire department in conformance with Sentence 3.2.4.7.(4)."
+                    ],
+                    [
+                      "11",
+                      "Construction of Exposing Building Face Article 3.2.3.7., Article 9.10.14.5. The exposing building face is required to have a fire-resistance rating and/or be of noncombustible construction .",
+                      "Exposing building face is not required to have a fire-resistance rating if the building is sprinklered . Also, the exposing building face is not required to be of noncombustible construction if it is protected by an exterior sprinkler system conforming to NFPA 13, \"Installation of Sprinkler Systems.\""
+                    ],
+                    [
+                      "12",
+                      "Roof Covering Rating Sentence 3.1.15.2.(1) Class A, B or C roof covering in conformance with CAN/ULC-S107, \"Fire Tests of Roof Coverings\" required.",
+                      "For existing roofs not covered by a Class A, B or C roofing a manually operated deluge system in accordance with NFPA 13, \"Installation of Sprinkler Systems\" is permitted."
+                    ]
+                  ],
+                  "page": 3
+                }
+              ],
+              "equations": [],
+              "references": [
+                {
+                  "text": "Table 1",
+                  "target_id": "TBL-1",
+                  "resolved": true
+                }
+              ],
+              "page_span": [
+                1,
+                2
+              ]
+            }
+          ],
+          "page_span": [
+            1
+          ]
+        }
+      ],
+      "page_span": [
+        1
+      ]
+    }
+  ],
+  "_stats": {
+    "total_references": 1,
+    "resolved_references": 1,
+    "resolution_rate_pct": 100.0
+  }
+}
