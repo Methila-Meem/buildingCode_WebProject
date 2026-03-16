@@ -1,0 +1,894 @@
+{
+  "status": "complete",
+  "output_format": "json",
+  "chunks": null,
+  "json": {
+    "children": [
+      {
+        "html": "<h1><hr/>Part 1Compliance</h1><h2>Section 1.1. General</h2><h3>1.1.1. Application of this Code</h3><h4>1.1.1.1. Application of this Code</h4><ol style=\"list-style-type: none\"><li><b>1)</b> This Code applies to any one or more of the following:<ol style=\"list-style-type: none\"><li>a) the design and construction of a new <i>building</i>,</li><li>b) the <i>occupancy</i> of any <i>building</i>,</li><li>c) a change in <i>occupancy</i> of any <i>building</i>,</li><li>d) an <i>alteration</i> of any <i>building</i>,</li><li>e) an addition to any <i>building</i>,</li><li>f) the demolition of any <i>building</i>,</li><li>g) the reconstruction of any <i>building</i> that has been damaged by fire, earthquake or other cause,</li><li>h) the correction of an <i>unsafe condition</i> in or about any <i>building</i>,</li><li>i) all parts of any <i>building</i> that are affected by a change in <i>occupancy</i>,</li><li>j) the work necessary to ensure safety in parts of a <i>building</i><ol style=\"list-style-type: none\"><li>i) that remain after a demolition,</li><li>ii) that are affected by but that are not directly involved in <i>alterations</i>, or</li><li>iii) that are affected by but not directly involved in additions,</li></ol></li><li>k) except as permitted by the British Columbia Fire Code, the installation, replacement, or <i>alteration</i> of materials or equipment regulated by this Code,</li><li>l) the work necessary to ensure safety in a relocated <i>building</i> during and after relocation,</li><li>m) safety during construction of a <i>building</i>, including protection of the public,</li><li>n) the design, installation, extension, <i>alteration</i>, renewal or repair of <i>plumbing systems</i>, and</li><li>o) the <i>alteration</i>, rehabilitation and change of occupancy of <i>heritage buildings</i>.</li></ol></li><li><b>2)</b> This Code does not apply to the following:<ol style=\"list-style-type: none\"><li>a) <i>sewage</i>, water, electrical, telephone, rail or similar public infrastructure systems located in a <i>street</i> or a public transit right of way,</li></ol></li></ol>",
+        "bbox": [
+          0.0,
+          0.0,
+          1632.0,
+          2112.0
+        ],
+        "polygon": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1632.0,
+            0.0
+          ],
+          [
+            1632.0,
+            2112.0
+          ],
+          [
+            0.0,
+            2112.0
+          ]
+        ],
+        "id": "/page/0/Page/0",
+        "block_type": "Page",
+        "children": [
+          {
+            "id": "/page/0/SectionHeader/0",
+            "block_type": "SectionHeader",
+            "html": "<h1><hr/>Part 1Compliance</h1>",
+            "page": 0,
+            "polygon": [
+              [
+                179.0,
+                304.0
+              ],
+              [
+                567.0,
+                304.0
+              ],
+              [
+                567.0,
+                437.0
+              ],
+              [
+                179.0,
+                437.0
+              ]
+            ],
+            "bbox": [
+              179.0,
+              304.0,
+              567.0,
+              437.0
+            ],
+            "section_hierarchy": {},
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/0/SectionHeader/1",
+            "block_type": "SectionHeader",
+            "html": "<h2>Section 1.1. General</h2>",
+            "page": 0,
+            "polygon": [
+              [
+                179.0,
+                652.0
+              ],
+              [
+                691.0,
+                652.0
+              ],
+              [
+                691.0,
+                701.0
+              ],
+              [
+                179.0,
+                701.0
+              ]
+            ],
+            "bbox": [
+              179.0,
+              652.0,
+              691.0,
+              701.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/0/SectionHeader/2",
+            "block_type": "SectionHeader",
+            "html": "<h3>1.1.1. Application of this Code</h3>",
+            "page": 0,
+            "polygon": [
+              [
+                179.0,
+                747.0
+              ],
+              [
+                789.0,
+                747.0
+              ],
+              [
+                789.0,
+                792.0
+              ],
+              [
+                179.0,
+                792.0
+              ]
+            ],
+            "bbox": [
+              179.0,
+              747.0,
+              789.0,
+              792.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/0/SectionHeader/3",
+            "block_type": "SectionHeader",
+            "html": "<h4>1.1.1.1. Application of this Code</h4>",
+            "page": 0,
+            "polygon": [
+              [
+                179.0,
+                830.0
+              ],
+              [
+                718.0,
+                830.0
+              ],
+              [
+                718.0,
+                865.0
+              ],
+              [
+                179.0,
+                865.0
+              ]
+            ],
+            "bbox": [
+              179.0,
+              830.0,
+              718.0,
+              865.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/0/ListGroup/4",
+            "block_type": "ListGroup",
+            "html": "<ol style=\"list-style-type: none\"><li><b>1)</b> This Code applies to any one or more of the following:<ol style=\"list-style-type: none\"><li>a) the design and construction of a new <i>building</i>,</li><li>b) the <i>occupancy</i> of any <i>building</i>,</li><li>c) a change in <i>occupancy</i> of any <i>building</i>,</li><li>d) an <i>alteration</i> of any <i>building</i>,</li><li>e) an addition to any <i>building</i>,</li><li>f) the demolition of any <i>building</i>,</li><li>g) the reconstruction of any <i>building</i> that has been damaged by fire, earthquake or other cause,</li><li>h) the correction of an <i>unsafe condition</i> in or about any <i>building</i>,</li><li>i) all parts of any <i>building</i> that are affected by a change in <i>occupancy</i>,</li><li>j) the work necessary to ensure safety in parts of a <i>building</i><ol style=\"list-style-type: none\"><li>i) that remain after a demolition,</li><li>ii) that are affected by but that are not directly involved in <i>alterations</i>, or</li><li>iii) that are affected by but not directly involved in additions,</li></ol></li><li>k) except as permitted by the British Columbia Fire Code, the installation, replacement, or <i>alteration</i> of materials or equipment regulated by this Code,</li><li>l) the work necessary to ensure safety in a relocated <i>building</i> during and after relocation,</li><li>m) safety during construction of a <i>building</i>, including protection of the public,</li><li>n) the design, installation, extension, <i>alteration</i>, renewal or repair of <i>plumbing systems</i>, and</li><li>o) the <i>alteration</i>, rehabilitation and change of occupancy of <i>heritage buildings</i>.</li></ol></li><li><b>2)</b> This Code does not apply to the following:<ol style=\"list-style-type: none\"><li>a) <i>sewage</i>, water, electrical, telephone, rail or similar public infrastructure systems located in a <i>street</i> or a public transit right of way,</li></ol></li></ol>",
+            "page": 0,
+            "polygon": [
+              [
+                398.0,
+                891.0
+              ],
+              [
+                1382.0,
+                891.0
+              ],
+              [
+                1382.0,
+                1883.0
+              ],
+              [
+                398.0,
+                1883.0
+              ]
+            ],
+            "bbox": [
+              398.0,
+              891.0,
+              1382.0,
+              1883.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/0/PageFooter/5",
+            "block_type": "PageFooter",
+            "html": "",
+            "page": 0,
+            "polygon": [
+              [
+                179.0,
+                2029.0
+              ],
+              [
+                324.0,
+                2029.0
+              ],
+              [
+                324.0,
+                2061.0
+              ],
+              [
+                179.0,
+                2061.0
+              ]
+            ],
+            "bbox": [
+              179.0,
+              2029.0,
+              324.0,
+              2061.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/0/PageFooter/6",
+            "block_type": "PageFooter",
+            "html": "",
+            "page": 0,
+            "polygon": [
+              [
+                1109.0,
+                2029.0
+              ],
+              [
+                1504.0,
+                2029.0
+              ],
+              [
+                1504.0,
+                2063.0
+              ],
+              [
+                1109.0,
+                2063.0
+              ]
+            ],
+            "bbox": [
+              1109.0,
+              2029.0,
+              1504.0,
+              2063.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          }
+        ],
+        "section_hierarchy": {}
+      },
+      {
+        "html": "\n<ul style=\"list-style-type: none\">\n<li>b) utility towers and poles, and television, radio and other communication aerials and towers, except for loads resulting from their being located on or attached to <i>buildings</i>,</li>\n<li>c) mechanical or other equipment and <i>appliances</i> not specifically regulated in these regulations,</li>\n<li>d) flood control and hydro electric dams and structures,</li>\n<li>e) accessory <i>buildings</i> less than 10 m<sup>2</sup> in <i>building area</i> that do not create a hazard,</li>\n<li>f) with the permission of the <i>authority having jurisdiction</i>, temporary <i>buildings</i> including\n      <ul style=\"list-style-type: none\">\n<li>i) construction site offices,</li>\n<li>ii) seasonal storage <i>buildings</i>,</li>\n<li>iii) special events facilities,</li>\n<li>iv) emergency facilities, and</li>\n<li>v) similar structures,</li>\n</ul>\n</li>\n<li>g) factory built housing and components complying with CSA-Z240 MH Series standard, but this exemption does not extend to on site preparations (siting, foundations, mountings), connection to services and installation of <i>appliances</i>, and</li>\n<li>h) areas that are specifically exempted from provincial <i>building</i> regulations by provincial or federal enactments.</li>\n</ul>\n\n<p><b>3)</b> This Code applies to both site-built and factory-constructed <i>buildings</i>. (See Note A-1.1.1.1.(3).)</p>\n\n<p><b>4)</b> <i>Farm buildings</i> shall conform to the requirements in the National <i>Farm Building</i> Code of Canada 1995.</p>\n\n<p><b>5)</b> For <i>heritage buildings</i>, the Alternate Compliance Methods for Heritage Buildings in Table 1.1.1.1.(5) may be substituted for requirements contained elsewhere in this Code. (See Note A-1.1.1.1.(5).)</p>\n\n<p style=\"text-align: center;\"><b>Table 1.1.1.1.(5)</b><br/>\n<b>Alternate Compliance Methods for Heritage Buildings</b><br/>\n  Forming Part of Sentence 1.1.1.1.(5)</p>\n\n<table border=\"1\">\n<thead>\n<tr>\n<th>No.</th><th>Code Requirement in Division B</th><th>Alternate Compliance Method</th></tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td><td><i>Fire Separations</i><br/>Sentence 3.1.3.1.(1), Table 3.1.3.1., Subsection 9.10.9.<br/>2 h <i>fire separation</i> required between some <i>major occupancies</i>.</td><td>Except for F1 <i>occupancies</i>, 1 h <i>fire separation</i> is acceptable, provided the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td>2</td><td><i>Fire Separations</i><br/>Sentence 3.1.3.1.(1), Table 3.1.3.1., Subsection 9.10.9.<br/>1 h <i>fire separation</i> required between some <i>major occupancies</i>.</td><td>30 min <i>fire separation</i> is acceptable if the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td>3</td><td><i>Noncombustible Construction</i><br/>Subsection 3.1.5., Article 9.10.6.1.<br/>All materials used in <i>noncombustible construction</i> must be <i>noncombustible</i> unless otherwise permitted.</td><td>1. Roofs may be of <i>combustible construction</i> provided the <i>building</i> is <i>sprinklered</i>.<br/>2. Up to 10% gross <i>floor area</i> to a maximum of 10% of any one <i>floor area</i> may be of <i>combustible construction</i> provided the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td>4</td><td><i>Fire-resistance Rating</i><br/>Sentence 3.1.7.1.(1), Article 9.10.3.1.<br/>Where a material, assembly of materials or structural</td><td>A <i>fire-resistance rating</i> may also be used based on:<br/>(a) HUD No. 8 Guideline on Fire Ratings of Archaic Materials and Assemblies.,<br/>(b) Fire Endurance of Protected Steel Columns and Beams, DBR Technical Paper No. 194.,</td></tr>\n</tbody>\n</table>\n",
+        "bbox": [
+          0.0,
+          0.0,
+          1632.0,
+          2112.0
+        ],
+        "polygon": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1632.0,
+            0.0
+          ],
+          [
+            1632.0,
+            2112.0
+          ],
+          [
+            0.0,
+            2112.0
+          ]
+        ],
+        "id": "/page/1/Page/1",
+        "block_type": "Page",
+        "children": [
+          {
+            "id": "/page/1/ListGroup/0",
+            "block_type": "ListGroup",
+            "html": "\n<ul style=\"list-style-type: none\">\n<li>b) utility towers and poles, and television, radio and other communication aerials and towers, except for loads resulting from their being located on or attached to <i>buildings</i>,</li>\n<li>c) mechanical or other equipment and <i>appliances</i> not specifically regulated in these regulations,</li>\n<li>d) flood control and hydro electric dams and structures,</li>\n<li>e) accessory <i>buildings</i> less than 10 m<sup>2</sup> in <i>building area</i> that do not create a hazard,</li>\n<li>f) with the permission of the <i>authority having jurisdiction</i>, temporary <i>buildings</i> including\n      <ul style=\"list-style-type: none\">\n<li>i) construction site offices,</li>\n<li>ii) seasonal storage <i>buildings</i>,</li>\n<li>iii) special events facilities,</li>\n<li>iv) emergency facilities, and</li>\n<li>v) similar structures,</li>\n</ul>\n</li>\n<li>g) factory built housing and components complying with CSA-Z240 MH Series standard, but this exemption does not extend to on site preparations (siting, foundations, mountings), connection to services and installation of <i>appliances</i>, and</li>\n<li>h) areas that are specifically exempted from provincial <i>building</i> regulations by provincial or federal enactments.</li>\n</ul>\n",
+            "page": 1,
+            "polygon": [
+              [
+                345.0,
+                156.0
+              ],
+              [
+                1328.0,
+                156.0
+              ],
+              [
+                1328.0,
+                901.0
+              ],
+              [
+                345.0,
+                901.0
+              ]
+            ],
+            "bbox": [
+              345.0,
+              156.0,
+              1328.0,
+              901.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/1/Text/1",
+            "block_type": "Text",
+            "html": "\n<p><b>3)</b> This Code applies to both site-built and factory-constructed <i>buildings</i>. (See Note A-1.1.1.1.(3).)</p>\n",
+            "page": 1,
+            "polygon": [
+              [
+                301.0,
+                914.0
+              ],
+              [
+                1325.0,
+                914.0
+              ],
+              [
+                1325.0,
+                984.0
+              ],
+              [
+                301.0,
+                984.0
+              ]
+            ],
+            "bbox": [
+              301.0,
+              914.0,
+              1325.0,
+              984.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/1/Text/2",
+            "block_type": "Text",
+            "html": "\n<p><b>4)</b> <i>Farm buildings</i> shall conform to the requirements in the National <i>Farm Building</i> Code of Canada 1995.</p>\n",
+            "page": 1,
+            "polygon": [
+              [
+                301.0,
+                998.0
+              ],
+              [
+                1310.0,
+                998.0
+              ],
+              [
+                1310.0,
+                1068.0
+              ],
+              [
+                301.0,
+                1068.0
+              ]
+            ],
+            "bbox": [
+              301.0,
+              998.0,
+              1310.0,
+              1068.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/1/Text/3",
+            "block_type": "Text",
+            "html": "\n<p><b>5)</b> For <i>heritage buildings</i>, the Alternate Compliance Methods for Heritage Buildings in Table 1.1.1.1.(5) may be substituted for requirements contained elsewhere in this Code. (See Note A-1.1.1.1.(5).)</p>\n",
+            "page": 1,
+            "polygon": [
+              [
+                301.0,
+                1083.0
+              ],
+              [
+                1326.0,
+                1083.0
+              ],
+              [
+                1326.0,
+                1189.0
+              ],
+              [
+                301.0,
+                1189.0
+              ]
+            ],
+            "bbox": [
+              301.0,
+              1083.0,
+              1326.0,
+              1189.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/1/Caption/4",
+            "block_type": "Caption",
+            "html": "\n<p style=\"text-align: center;\"><b>Table 1.1.1.1.(5)</b><br/>\n<b>Alternate Compliance Methods for Heritage Buildings</b><br/>\n  Forming Part of Sentence 1.1.1.1.(5)</p>\n",
+            "page": 1,
+            "polygon": [
+              [
+                460.0,
+                1208.0
+              ],
+              [
+                1142.0,
+                1208.0
+              ],
+              [
+                1142.0,
+                1305.0
+              ],
+              [
+                460.0,
+                1305.0
+              ]
+            ],
+            "bbox": [
+              460.0,
+              1208.0,
+              1142.0,
+              1305.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/1/Table/5",
+            "block_type": "Table",
+            "html": "\n<table border=\"1\">\n<thead>\n<tr>\n<th>No.</th><th>Code Requirement in Division B</th><th>Alternate Compliance Method</th></tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td><td><i>Fire Separations</i><br/>Sentence 3.1.3.1.(1), Table 3.1.3.1., Subsection 9.10.9.<br/>2 h <i>fire separation</i> required between some <i>major occupancies</i>.</td><td>Except for F1 <i>occupancies</i>, 1 h <i>fire separation</i> is acceptable, provided the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td>2</td><td><i>Fire Separations</i><br/>Sentence 3.1.3.1.(1), Table 3.1.3.1., Subsection 9.10.9.<br/>1 h <i>fire separation</i> required between some <i>major occupancies</i>.</td><td>30 min <i>fire separation</i> is acceptable if the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td>3</td><td><i>Noncombustible Construction</i><br/>Subsection 3.1.5., Article 9.10.6.1.<br/>All materials used in <i>noncombustible construction</i> must be <i>noncombustible</i> unless otherwise permitted.</td><td>1. Roofs may be of <i>combustible construction</i> provided the <i>building</i> is <i>sprinklered</i>.<br/>2. Up to 10% gross <i>floor area</i> to a maximum of 10% of any one <i>floor area</i> may be of <i>combustible construction</i> provided the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td>4</td><td><i>Fire-resistance Rating</i><br/>Sentence 3.1.7.1.(1), Article 9.10.3.1.<br/>Where a material, assembly of materials or structural</td><td>A <i>fire-resistance rating</i> may also be used based on:<br/>(a) HUD No. 8 Guideline on Fire Ratings of Archaic Materials and Assemblies.,<br/>(b) Fire Endurance of Protected Steel Columns and Beams, DBR Technical Paper No. 194.,</td></tr>\n</tbody>\n</table>\n",
+            "page": 1,
+            "polygon": [
+              [
+                143.0,
+                1303.0
+              ],
+              [
+                1459.0,
+                1303.0
+              ],
+              [
+                1459.0,
+                1974.0
+              ],
+              [
+                143.0,
+                1974.0
+              ]
+            ],
+            "bbox": [
+              143.0,
+              1303.0,
+              1459.0,
+              1974.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/1/PageFooter/6",
+            "block_type": "PageFooter",
+            "html": "",
+            "page": 1,
+            "polygon": [
+              [
+                122.0,
+                2029.0
+              ],
+              [
+                510.0,
+                2029.0
+              ],
+              [
+                510.0,
+                2063.0
+              ],
+              [
+                122.0,
+                2063.0
+              ]
+            ],
+            "bbox": [
+              122.0,
+              2029.0,
+              510.0,
+              2063.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/1/PageFooter/7",
+            "block_type": "PageFooter",
+            "html": "",
+            "page": 1,
+            "polygon": [
+              [
+                1295.0,
+                2029.0
+              ],
+              [
+                1452.0,
+                2029.0
+              ],
+              [
+                1452.0,
+                2061.0
+              ],
+              [
+                1295.0,
+                2061.0
+              ]
+            ],
+            "bbox": [
+              1295.0,
+              2029.0,
+              1452.0,
+              2061.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          }
+        ],
+        "section_hierarchy": {
+          "1": "/page/0/SectionHeader/0",
+          "2": "/page/0/SectionHeader/1",
+          "3": "/page/0/SectionHeader/2",
+          "4": "/page/0/SectionHeader/3"
+        }
+      },
+      {
+        "html": "\n<p><b>Table 1.1.1.1.(5) (continued)</b></p>\n\n<table border=\"1\">\n<thead>\n<tr>\n<th data-bbox=\"208 192 274 249\">No.</th><th data-bbox=\"274 192 897 249\">Code Requirement in Division B</th><th data-bbox=\"897 192 1522 249\">Alternate Compliance Method</th></tr>\n</thead>\n<tbody>\n<tr>\n<td data-bbox=\"208 249 274 386\"></td><td data-bbox=\"274 249 897 386\">member is required to have a <i>fire-resistance rating</i> it shall be tested in accordance with CAN/ULC-S101, \"Fire Endurance Tests of Building Construction Materials.\"</td><td data-bbox=\"897 249 1522 386\">(c) Fire Endurance of Unit Masonry Walls, DBR Technical Paper No. 207,<br/>(d) Fire Endurance of Light-Framed and Miscellaneous Assemblies, DBR Technical Paper No. 222.</td></tr>\n<tr>\n<td data-bbox=\"208 386 274 555\">5</td><td data-bbox=\"274 386 897 555\">Rating of Supporting Construction<br/>Article 3.1.7.5., Article 9.10.8.3.<br/>Supporting assemblies to have <i>fire-resistance rating</i> at least equivalent to that of the supported floor.</td><td data-bbox=\"897 386 1522 555\"><i>Heavy timber construction</i> is permitted to have a <i>fire-resistance rating</i> less than would be required by the Code provided the <i>building</i>:<br/>(a) is <i>sprinklered</i>, and<br/>(b) does not exceed 6 <i>storeys</i> in <i>building height</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 555 274 724\">6</td><td data-bbox=\"274 555 897 724\">Continuity of <i>Fire Separations</i><br/>Sentence 3.1.8.3.(1), Sentence 3.1.8.3.(2), Article 9.10.9.2.<br/><i>Fire separations</i> are required to be continuous above the ceiling space.</td><td data-bbox=\"897 555 1522 724\"><i>Fire separations</i> are not required to be continuous above a ceiling space where<br/>(a) the ceiling space is <i>noncombustible construction</i>,<br/>(b) both <i>fire compartments</i> are <i>sprinklered</i>, or<br/>(c) the ceiling has a minimum rating of 30 minutes.</td></tr>\n<tr>\n<td data-bbox=\"208 724 274 893\">7</td><td data-bbox=\"274 724 897 893\">Wired Glass<br/>Sentence 3.1.8.5.(1), Sentence 3.1.8.14.(2), Article 9.10.13.1., Article 9.10.13.5.<br/>6 mm wired glass in steel frame required in <i>fire separations</i>.</td><td data-bbox=\"897 724 1522 893\">For fixed transoms or sidelights, 6 mm wired glass fixed to a wood frame of at least 50 mm thickness with steel stops is permitted in a required <i>fire separation</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 893 274 1083\">8</td><td data-bbox=\"274 893 897 1083\"><i>Mezzanines</i><br/>Sentence 3.2.1.1.(4) and Sentence 3.2.1.1.(7), Article 9.10.4.1.<br/><i>Mezzanines</i> enclosing more than 10% above the horizontal plane are considered as <i>storey</i> in <i>building height</i>.</td><td data-bbox=\"897 893 1522 1083\">Enclosed <i>mezzanines</i> may be up to 40% of the <i>storey</i> in which they occur and not be considered a <i>storey</i> in <i>building height</i> if the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 1083 274 1336\">9</td><td data-bbox=\"274 1083 897 1336\"><i>Building Height</i><br/>Article 3.2.2.20. to Article 3.2.2.90.<br/><i>Noncombustible construction</i> required for some <i>buildings</i>.</td><td data-bbox=\"897 1083 1522 1336\"><i>Buildings</i> may be of <i>combustible construction</i> up to 6 <i>storeys</i> provided:<br/>(a) the <i>building</i> is <i>sprinklered</i>,<br/>(b) the <i>building</i> contains Group C, D, E, F, Division 2 or F, Division 3 <i>occupancies</i>, and<br/>(c) floor assemblies not required to exceed 1 h <i>fire separation</i> requirements may be of <i>heavy timber construction</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 1336 274 1569\">10</td><td data-bbox=\"274 1336 897 1569\">Spatial Separation<br/>Subsection 3.2.3., Subsection 9.10.14.<br/>The area of <i>unprotected opening</i> shall not exceed the limits in Tables 3.2.3.1.A to Table 3.2.3.1.E</td><td data-bbox=\"897 1336 1522 1569\">The area of <i>unprotected opening</i> is not limited provided:<br/>(a) the <i>limiting distance</i> is a minimum 1 m,<br/>(b) the <i>building</i> has a supervised sprinkler system in conformance with Sentence 3.2.4.9.(3), and<br/>(c) the sprinkler system is connected to the fire department in conformance with Sentence 3.2.4.7.(4).</td></tr>\n<tr>\n<td data-bbox=\"208 1569 274 1759\">11</td><td data-bbox=\"274 1569 897 1759\">Construction of <i>Exposing Building Face</i><br/>Article 3.2.3.7., Article 9.10.14.5.<br/>The <i>exposing building face</i> is required to have a <i>fire-resistance rating</i> and/or be of <i>noncombustible construction</i>.</td><td data-bbox=\"897 1569 1522 1759\"><i>Exposing building face</i> is not required to have a <i>fire-resistance rating</i> if the <i>building</i> is <i>sprinklered</i>. Also, the <i>exposing building face</i> is not required to be of <i>noncombustible construction</i> if it is protected by an exterior sprinkler system conforming to NFPA 13, \"Installation of Sprinkler Systems.\"</td></tr>\n<tr>\n<td data-bbox=\"208 1759 274 1881\">12</td><td data-bbox=\"274 1759 897 1881\">Roof Covering Rating<br/>Sentence 3.1.15.2.(1)<br/>Class A, B or C roof covering in conformance with CAN/ULC-S107, \"Fire Tests of Roof Coverings\" required.</td><td data-bbox=\"897 1759 1522 1881\">For existing roofs not covered by a Class A, B or C roofing a manually operated deluge system in accordance with NFPA 13, \"Installation of Sprinkler Systems\" is permitted.</td></tr>\n</tbody>\n</table>\n",
+        "bbox": [
+          0.0,
+          0.0,
+          1632.0,
+          2112.0
+        ],
+        "polygon": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1632.0,
+            0.0
+          ],
+          [
+            1632.0,
+            2112.0
+          ],
+          [
+            0.0,
+            2112.0
+          ]
+        ],
+        "id": "/page/2/Page/2",
+        "block_type": "Page",
+        "children": [
+          {
+            "id": "/page/2/Caption/0",
+            "block_type": "Caption",
+            "html": "\n<p><b>Table 1.1.1.1.(5) (continued)</b></p>\n",
+            "page": 2,
+            "polygon": [
+              [
+                691.0,
+                152.0
+              ],
+              [
+                1033.0,
+                152.0
+              ],
+              [
+                1033.0,
+                185.0
+              ],
+              [
+                691.0,
+                185.0
+              ]
+            ],
+            "bbox": [
+              691.0,
+              152.0,
+              1033.0,
+              185.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/2/Table/1",
+            "block_type": "Table",
+            "html": "\n<table border=\"1\">\n<thead>\n<tr>\n<th data-bbox=\"208 192 274 249\">No.</th><th data-bbox=\"274 192 897 249\">Code Requirement in Division B</th><th data-bbox=\"897 192 1522 249\">Alternate Compliance Method</th></tr>\n</thead>\n<tbody>\n<tr>\n<td data-bbox=\"208 249 274 386\"></td><td data-bbox=\"274 249 897 386\">member is required to have a <i>fire-resistance rating</i> it shall be tested in accordance with CAN/ULC-S101, \"Fire Endurance Tests of Building Construction Materials.\"</td><td data-bbox=\"897 249 1522 386\">(c) Fire Endurance of Unit Masonry Walls, DBR Technical Paper No. 207,<br/>(d) Fire Endurance of Light-Framed and Miscellaneous Assemblies, DBR Technical Paper No. 222.</td></tr>\n<tr>\n<td data-bbox=\"208 386 274 555\">5</td><td data-bbox=\"274 386 897 555\">Rating of Supporting Construction<br/>Article 3.1.7.5., Article 9.10.8.3.<br/>Supporting assemblies to have <i>fire-resistance rating</i> at least equivalent to that of the supported floor.</td><td data-bbox=\"897 386 1522 555\"><i>Heavy timber construction</i> is permitted to have a <i>fire-resistance rating</i> less than would be required by the Code provided the <i>building</i>:<br/>(a) is <i>sprinklered</i>, and<br/>(b) does not exceed 6 <i>storeys</i> in <i>building height</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 555 274 724\">6</td><td data-bbox=\"274 555 897 724\">Continuity of <i>Fire Separations</i><br/>Sentence 3.1.8.3.(1), Sentence 3.1.8.3.(2), Article 9.10.9.2.<br/><i>Fire separations</i> are required to be continuous above the ceiling space.</td><td data-bbox=\"897 555 1522 724\"><i>Fire separations</i> are not required to be continuous above a ceiling space where<br/>(a) the ceiling space is <i>noncombustible construction</i>,<br/>(b) both <i>fire compartments</i> are <i>sprinklered</i>, or<br/>(c) the ceiling has a minimum rating of 30 minutes.</td></tr>\n<tr>\n<td data-bbox=\"208 724 274 893\">7</td><td data-bbox=\"274 724 897 893\">Wired Glass<br/>Sentence 3.1.8.5.(1), Sentence 3.1.8.14.(2), Article 9.10.13.1., Article 9.10.13.5.<br/>6 mm wired glass in steel frame required in <i>fire separations</i>.</td><td data-bbox=\"897 724 1522 893\">For fixed transoms or sidelights, 6 mm wired glass fixed to a wood frame of at least 50 mm thickness with steel stops is permitted in a required <i>fire separation</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 893 274 1083\">8</td><td data-bbox=\"274 893 897 1083\"><i>Mezzanines</i><br/>Sentence 3.2.1.1.(4) and Sentence 3.2.1.1.(7), Article 9.10.4.1.<br/><i>Mezzanines</i> enclosing more than 10% above the horizontal plane are considered as <i>storey</i> in <i>building height</i>.</td><td data-bbox=\"897 893 1522 1083\">Enclosed <i>mezzanines</i> may be up to 40% of the <i>storey</i> in which they occur and not be considered a <i>storey</i> in <i>building height</i> if the <i>building</i> is <i>sprinklered</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 1083 274 1336\">9</td><td data-bbox=\"274 1083 897 1336\"><i>Building Height</i><br/>Article 3.2.2.20. to Article 3.2.2.90.<br/><i>Noncombustible construction</i> required for some <i>buildings</i>.</td><td data-bbox=\"897 1083 1522 1336\"><i>Buildings</i> may be of <i>combustible construction</i> up to 6 <i>storeys</i> provided:<br/>(a) the <i>building</i> is <i>sprinklered</i>,<br/>(b) the <i>building</i> contains Group C, D, E, F, Division 2 or F, Division 3 <i>occupancies</i>, and<br/>(c) floor assemblies not required to exceed 1 h <i>fire separation</i> requirements may be of <i>heavy timber construction</i>.</td></tr>\n<tr>\n<td data-bbox=\"208 1336 274 1569\">10</td><td data-bbox=\"274 1336 897 1569\">Spatial Separation<br/>Subsection 3.2.3., Subsection 9.10.14.<br/>The area of <i>unprotected opening</i> shall not exceed the limits in Tables 3.2.3.1.A to Table 3.2.3.1.E</td><td data-bbox=\"897 1336 1522 1569\">The area of <i>unprotected opening</i> is not limited provided:<br/>(a) the <i>limiting distance</i> is a minimum 1 m,<br/>(b) the <i>building</i> has a supervised sprinkler system in conformance with Sentence 3.2.4.9.(3), and<br/>(c) the sprinkler system is connected to the fire department in conformance with Sentence 3.2.4.7.(4).</td></tr>\n<tr>\n<td data-bbox=\"208 1569 274 1759\">11</td><td data-bbox=\"274 1569 897 1759\">Construction of <i>Exposing Building Face</i><br/>Article 3.2.3.7., Article 9.10.14.5.<br/>The <i>exposing building face</i> is required to have a <i>fire-resistance rating</i> and/or be of <i>noncombustible construction</i>.</td><td data-bbox=\"897 1569 1522 1759\"><i>Exposing building face</i> is not required to have a <i>fire-resistance rating</i> if the <i>building</i> is <i>sprinklered</i>. Also, the <i>exposing building face</i> is not required to be of <i>noncombustible construction</i> if it is protected by an exterior sprinkler system conforming to NFPA 13, \"Installation of Sprinkler Systems.\"</td></tr>\n<tr>\n<td data-bbox=\"208 1759 274 1881\">12</td><td data-bbox=\"274 1759 897 1881\">Roof Covering Rating<br/>Sentence 3.1.15.2.(1)<br/>Class A, B or C roof covering in conformance with CAN/ULC-S107, \"Fire Tests of Roof Coverings\" required.</td><td data-bbox=\"897 1759 1522 1881\">For existing roofs not covered by a Class A, B or C roofing a manually operated deluge system in accordance with NFPA 13, \"Installation of Sprinkler Systems\" is permitted.</td></tr>\n</tbody>\n</table>\n",
+            "page": 2,
+            "polygon": [
+              [
+                204.0,
+                183.0
+              ],
+              [
+                1527.0,
+                183.0
+              ],
+              [
+                1527.0,
+                1888.0
+              ],
+              [
+                204.0,
+                1888.0
+              ]
+            ],
+            "bbox": [
+              204.0,
+              183.0,
+              1527.0,
+              1888.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/2/PageFooter/2",
+            "block_type": "PageFooter",
+            "html": "",
+            "page": 2,
+            "polygon": [
+              [
+                181.0,
+                2029.0
+              ],
+              [
+                326.0,
+                2029.0
+              ],
+              [
+                326.0,
+                2059.0
+              ],
+              [
+                181.0,
+                2059.0
+              ]
+            ],
+            "bbox": [
+              181.0,
+              2029.0,
+              326.0,
+              2059.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          },
+          {
+            "id": "/page/2/PageFooter/3",
+            "block_type": "PageFooter",
+            "html": "",
+            "page": 2,
+            "polygon": [
+              [
+                1109.0,
+                2029.0
+              ],
+              [
+                1517.0,
+                2029.0
+              ],
+              [
+                1517.0,
+                2061.0
+              ],
+              [
+                1109.0,
+                2061.0
+              ]
+            ],
+            "bbox": [
+              1109.0,
+              2029.0,
+              1517.0,
+              2061.0
+            ],
+            "section_hierarchy": {
+              "1": "/page/0/SectionHeader/0",
+              "2": "/page/0/SectionHeader/1",
+              "3": "/page/0/SectionHeader/2",
+              "4": "/page/0/SectionHeader/3"
+            },
+            "images": {},
+            "markdown": null,
+            "inference_failed": false
+          }
+        ],
+        "section_hierarchy": {
+          "1": "/page/0/SectionHeader/0",
+          "2": "/page/0/SectionHeader/1",
+          "3": "/page/0/SectionHeader/2",
+          "4": "/page/0/SectionHeader/3"
+        }
+      }
+    ],
+    "metadata": {
+      "page_stats": [
+        {
+          "page_id": 0,
+          "num_blocks": 7
+        },
+        {
+          "page_id": 1,
+          "num_blocks": 8
+        },
+        {
+          "page_id": 2,
+          "num_blocks": 4
+        }
+      ]
+    }
+  },
+  "markdown": null,
+  "html": null,
+  "extraction_schema_json": null,
+  "segmentation_results": null,
+  "images": {},
+  "metadata": {
+    "page_stats": [
+      {
+        "page_id": 0,
+        "num_blocks": 7
+      },
+      {
+        "page_id": 1,
+        "num_blocks": 8
+      },
+      {
+        "page_id": 2,
+        "num_blocks": 4
+      }
+    ]
+  },
+  "success": true,
+  "error": "",
+  "parse_quality_score": null,
+  "page_count": 3,
+  "total_cost": 1,
+  "cost_breakdown": {
+    "final_cost_cents": 1.0
+  },
+  "runtime": 7.112612724304199,
+  "checkpoint_id": null,
+  "versions": null,
+  "evaluation": null
+}
