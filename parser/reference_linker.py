@@ -51,7 +51,7 @@ REFERENCE_PATTERNS = [
 # Group 1 captures the full A- identifier including optional sentence number
 # ─────────────────────────────────────────────────────────────────────────────
 RE_NOTE = re.compile(
-    r'See Note\s+(A-(?:Table\s+)?[\d\.]+(?:\.\(\d+\))?(?:\s+and\s+\(\d+\))*\.?)',
+    r'See Note\s+(A-(?:Table\s+)?\d+(?:\.\d+)*(?:\.\(\d+\))?(?:\s+and\s+\(\d+\))*\.?)',
     re.IGNORECASE
 )
 
@@ -95,34 +95,73 @@ def build_note_index(document_dict: dict) -> dict:
     """
     Build a note reference -> [clause_id, ...] lookup.
 
-    Scans all CL-AUTO-N clauses whose titles start with 'A-'.
-    These are the appendix commentary sections included in this PDF.
+    Scans all CL-AUTO-N clauses in two passes:
 
-    Returns dict mapping note key -> list of matching clause IDs.
-    e.g. {'A-4.1.3.2': ['CL-AUTO-39', 'CL-AUTO-40'], ...}
+    Pass 1 — Clause title (existing behaviour):
+        Clauses whose titles start with 'A-' are indexed by their A- identifier.
+        e.g. 'A-4.1.3.2.(2) Load Combinations.' -> CL-AUTO-39
 
-    Notes that are NOT in this dict are external references (in other PDFs).
+    Pass 2 — Embedded content text items (NEW):
+        Many appendix notes are not separate clauses — they are sub-entries
+        embedded as text blocks inside a larger CL-AUTO clause.  For example,
+        CL-AUTO-40 (titled 'A-4.1.3.2.(4) ...') contains text items that begin
+        with 'A-4.1.4.1.(2)', 'A-4.1.5.1.(1)', etc.  These were previously
+        invisible to note resolution, leaving 62 note refs unresolved even
+        though their content exists in the document.
+
+        We now also scan the first line of every text content item in every
+        CL-AUTO clause.  If the line begins with an A- identifier we register
+        the containing clause as the navigation target for that note ref.
+
+    Returns dict mapping note key -> list of matching clause IDs (deduplicated,
+    ordered by first occurrence).
+    e.g. {'A-4.1.3.2': ['CL-AUTO-39', 'CL-AUTO-40'],
+          'A-4.1.4.1': ['CL-AUTO-40'], ...}
     """
+    RE_A_TITLE = re.compile(
+        r'(A-(?:Table\s+)?\d+(?:\.\d+)*(?:\.\(\d+\))?(?:\s+and\s+\(\d+\))?)',
+    )
     note_idx = {}
 
     for chapter in document_dict.get("chapters", []):
         for section in chapter.get("sections", []):
             for clause in section.get("clauses", []):
-                cid   = clause.get("id", "")
-                title = clause.get("title", "")
-
-                if not (cid.startswith("CL-AUTO") and title.startswith("A-")):
+                cid = clause.get("id", "")
+                if not cid.startswith("CL-AUTO"):
                     continue
 
-                # Extract the A- identifier from the title
-                # Handles: "A-4.1.3.2.(2) Load..."  "A-Table 4.1.2.1. Importance..."
-                m = re.match(
-                    r'(A-(?:Table\s+)?[\d\.]+(?:\.\(\d+\))?(?:\s+and\s+\(\d+\))?)',
-                    title
-                )
-                if m:
-                    key = m.group(1).strip().rstrip('.')
-                    note_idx.setdefault(key, []).append(cid)
+                title = clause.get("title", "")
+
+                # ── Pass 1: index the clause title ────────────────────────────
+                if title.startswith("A-"):
+                    m = RE_A_TITLE.match(title)
+                    if m:
+                        key = m.group(1).strip().rstrip('.')
+                        if cid not in note_idx.get(key, []):
+                            note_idx.setdefault(key, []).append(cid)
+
+                # ── Pass 2: index embedded A- sub-entries in content text ─────
+                # Text items whose value begins with an A- identifier are
+                # sub-entries of the appendix that share this clause's page.
+                # Navigating to the containing clause is the best we can do
+                # without separate clause objects for each sub-entry.
+                for item in clause.get("content", []):
+                    if item.get("type") not in ("text", "sub_clause"):
+                        continue
+                    val = item.get("value", "").strip()
+                    if not val.startswith("A-"):
+                        continue
+                    m = RE_A_TITLE.match(val)
+                    if not m:
+                        continue
+                    # Extract base identifier (without sentence number) as key
+                    full_key = m.group(1).strip().rstrip('.')
+                    # Also register a base-only key (strip trailing .(N) part)
+                    base_key = re.sub(r'\.\(\d+\).*$', '', full_key)
+
+                    for key in {full_key, base_key}:
+                        if cid not in note_idx.get(key, []):
+                            note_idx.setdefault(key, []).append(cid)
 
     return note_idx
 
@@ -131,15 +170,46 @@ def build_note_index(document_dict: dict) -> dict:
 # Reference resolution helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _normalize_ref(s: str) -> str:
+    """
+    Normalize a Figure/Table identifier for caption lookup.
+
+    Strips trailing dots and removes all dots and hyphens from the numeric
+    portion so that typos in source captions (e.g. "4.1.76.-C" instead of
+    "4.1.7.6.-C") and trailing-dot variants ("4.1.6.5.-A.") both map to
+    the same comparison key.
+
+    Examples::
+
+        "4.1.6.5.-A."  -> "4165a"
+        "4.1.6.5.-A"   -> "4165a"
+        "4.1.76.-C"    -> "4176c"   (typo in source)
+        "4.1.7.6.-C"   -> "4176c"   (reference text)
+    """
+    return re.sub(r'[.\-]', '', s.rstrip('.')).lower()
+
+
 def _ref_to_id(ref: str, kind: str, id_index: dict) -> Optional[str]:
     """
     Convert a standard reference string to a document node ID.
+
+    FIX (Bug 2 + Enhancement 2):
+      - Strip trailing dots from Figure/Table refs before caption lookup.
+        The regex r'[\\d\\.]+[\\w\\.\\-]*' captures a trailing period when the
+        reference appears mid-sentence (e.g. "Table 4.1.3.2.-B."), causing
+        the substring check  "4.1.3.2.-b."  to fail against caption key
+        "_cap_Table 4.1.3.2.-B" (no trailing dot).
+      - Use normalized comparison (dots/hyphens stripped) so that source-PDF
+        typos like "Figure 4.1.76.-C" (missing dot) resolve correctly when
+        the reference text says "Figure 4.1.7.6.-C".
 
     Subsection always maps to SEC- regardless of the number of dot-parts.
     "4.1.4" has 3 parts but is still a Subsection (SEC-4-1-4), not a Clause.
     """
     kind_lower = kind.lower()
-    normalized = re.sub(r'[.\-]', '-', ref).strip('-')
+    # Normalize: strip trailing dot before building the fallback ID
+    ref_clean  = ref.rstrip('.')
+    normalized = re.sub(r'[.\-]', '-', ref_clean).strip('-')
 
     if kind_lower in ("sentence", "article", "clause"):
         return f"CL-{normalized}"
@@ -148,15 +218,28 @@ def _ref_to_id(ref: str, kind: str, id_index: dict) -> Optional[str]:
         return f"SEC-{normalized}"
 
     if kind_lower == "table":
-        for key in id_index:
-            if key.startswith("_cap_") and ref.lower() in key.lower():
-                return id_index[key].get("id", "")
+        ref_norm = _normalize_ref(ref_clean)
+        for key, node in id_index.items():
+            if not key.startswith("_cap_"):
+                continue
+            # Extract the table number from the caption key for comparison.
+            # Caption keys look like: "_cap_Table 4.1.3.2.-A Load Combinations..."
+            # We want to match only the identifier part, not the full caption text.
+            cap_body = key[len("_cap_"):]
+            cap_m    = re.match(r'(?:Table\s+)?([\d\.]+[\w\.\-]*)', cap_body, re.IGNORECASE)
+            if cap_m and _normalize_ref(cap_m.group(1)) == ref_norm:
+                return node.get("id", "")
         return f"TBL-{normalized}"
 
     if kind_lower == "figure":
-        for key in id_index:
-            if key.startswith("_cap_") and ref.lower() in key.lower():
-                return id_index[key].get("id", "")
+        ref_norm = _normalize_ref(ref_clean)
+        for key, node in id_index.items():
+            if not key.startswith("_cap_"):
+                continue
+            cap_body = key[len("_cap_"):]
+            cap_m    = re.match(r'(?:Figure\s+)?([\d\.]+[\w\.\-]*)', cap_body, re.IGNORECASE)
+            if cap_m and _normalize_ref(cap_m.group(1)) == ref_norm:
+                return node.get("id", "")
         return f"FIG-{normalized}"
 
     return None

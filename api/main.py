@@ -32,11 +32,15 @@ app = FastAPI(
 )
 
 # -------------------------------------------------------
-# CORS — allow the React viewer (localhost:3000) to call this API
+# CORS — allow the Streamlit viewer (localhost:8501) to call this API.
+# No React frontend is used; Streamlit is the only viewer.
 # -------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:8501",
+        "http://127.0.0.1:8501",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -140,40 +144,57 @@ def get_clause(clause_id: str):
 @app.get("/search")
 def search(q: str = Query(..., min_length=2, description="Search term")):
     """
-    Full-text search across all clause titles and text.
-    Returns matching entries with breadcrumb navigation paths.
+    Full-text search across all clause titles and content text.
+    Returns matching entries with breadcrumb navigation paths and
+    a context-aware snippet showing the match in context.
+
+    FIX: The old version built snippets from entry.get("text", "") which was
+    always empty under the old build_search_index() schema.  Now that
+    build_search_index() correctly populates "text" from content[] items,
+    we search that field and generate a proper context snippet around the
+    matched term.  We also fall back to the pre-computed "snippet" field
+    (first text item of the clause) when the term is found only in the
+    title rather than the body.
     """
-    term = q.lower()
+    term  = q.lower()
     index = get_search_index()
 
     results = []
     for entry in index:
-        haystack = f"{entry.get('title', '')} {entry.get('text', '')}".lower()
-        if term in haystack:
-            # Add a snippet showing the match in context
-            text = entry.get("text", "")
-            idx = text.lower().find(term)
-            if idx >= 0:
-                start = max(0, idx - 40)
-                end = min(len(text), idx + len(term) + 80)
-                snippet = ("..." if start > 0 else "") + text[start:end] + ("..." if end < len(text) else "")
-            else:
-                snippet = text[:120]
+        title       = entry.get("title", "")
+        full_text   = entry.get("text", "")
+        haystack    = f"{title} {full_text}".lower()
 
-            results.append({
-                "id": entry["id"],
-                "type": entry["type"],
-                "number": entry["number"],
-                "title": entry["title"],
-                "breadcrumb": entry["breadcrumb"],
-                "snippet": snippet,
-                "page": entry.get("page", 0),
-            })
+        if term not in haystack:
+            continue
+
+        # Build a context snippet showing the match surrounded by ~80 chars
+        snippet = ""
+        idx = full_text.lower().find(term)
+        if idx >= 0:
+            start   = max(0, idx - 60)
+            end     = min(len(full_text), idx + len(term) + 100)
+            prefix  = "..." if start > 0 else ""
+            suffix  = "..." if end < len(full_text) else ""
+            snippet = prefix + full_text[start:end] + suffix
+        else:
+            # Term matched in title only — use the pre-computed first-sentence snippet
+            snippet = entry.get("snippet", title)[:200]
+
+        results.append({
+            "id":         entry["id"],
+            "type":       entry["type"],
+            "number":     entry["number"],
+            "title":      title,
+            "breadcrumb": entry["breadcrumb"],
+            "snippet":    snippet,
+            "page":       entry.get("page", 0),
+        })
 
     return {
-        "query": q,
-        "count": len(results),
-        "results": results[:50],  # cap at 50 for performance
+        "query":   q,
+        "count":   len(results),
+        "results": results[:50],   # cap at 50 for performance
     }
 
 

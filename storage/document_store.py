@@ -63,8 +63,20 @@ def build_search_index(document_dict: dict) -> list:
     Build a flat list of all searchable text entries from the document.
     Used by the FastAPI /search endpoint.
 
+    FIX (Bug 1): The old version read clause.get("text", "") which does not
+    exist in the data model — all content lives in the ordered content[] array.
+    It also iterated clause.get("sub_clauses", []) which no longer exists as a
+    separate list (sub-clauses are content[] items with type="sub_clause").
+
+    This version:
+      - Concatenates all content[] item values and latex strings into a single
+        searchable text string per clause.
+      - Extracts a meaningful snippet from the first text/sub_clause item.
+      - Sub-clauses are included in the parent clause's content text, so they
+        do not need separate index entries.
+
     Returns:
-        List of dicts: [{"id": "CL-3-1-2", "text": "...", "breadcrumb": "Ch3 > 3.1 > 3.1.2"}, ...]
+        List of dicts: [{"id": "CL-4-1-2-1", "text": "...", "breadcrumb": "..."}, ...]
     """
     index = []
 
@@ -77,27 +89,52 @@ def build_search_index(document_dict: dict) -> list:
             for clause in section.get("clauses", []):
                 cl_label = f"{sec_label} > {clause['number']}"
 
-                # Index the clause itself
-                index.append({
-                    "id": clause["id"],
-                    "type": "clause",
-                    "number": clause["number"],
-                    "title": clause.get("title", ""),
-                    "text": clause.get("text", ""),
-                    "breadcrumb": cl_label,
-                    "page": clause.get("page_span", [0])[0],
-                })
+                # Build a single searchable text string from all content[] items.
+                # Includes text values, sub_clause values, and equation LaTeX.
+                content_parts = []
+                for item in clause.get("content", []):
+                    itype = item.get("type", "")
+                    if itype in ("text", "sub_clause"):
+                        v = item.get("value", "").strip()
+                        if v:
+                            content_parts.append(v)
+                    elif itype == "equation":
+                        latex = item.get("latex", "").strip()
+                        if latex:
+                            content_parts.append(latex)
+                    elif itype == "figure":
+                        # Include caption and alt text for figure search
+                        cap = item.get("caption", "").strip()
+                        alt = item.get("alt_text", "").strip()
+                        if cap:
+                            content_parts.append(cap)
+                        elif alt:
+                            content_parts.append(alt[:120])
+                    elif itype == "table":
+                        # value holds the caption text for table content items
+                        cap = item.get("value", "").strip()
+                        if cap:
+                            content_parts.append(cap)
 
-                # Index sub-clauses
-                for sc in clause.get("sub_clauses", []):
-                    index.append({
-                        "id": sc["id"],
-                        "type": "sub_clause",
-                        "number": sc.get("marker", ""),
-                        "title": "",
-                        "text": sc.get("text", ""),
-                        "breadcrumb": cl_label,
-                        "page": clause.get("page_span", [0])[0],
-                    })
+                full_text = " ".join(content_parts)
+
+                # Extract a short human-readable snippet from the first text item
+                snippet = ""
+                for item in clause.get("content", []):
+                    if item.get("type") in ("text", "sub_clause"):
+                        snippet = item.get("value", "").strip()
+                        if snippet:
+                            break
+
+                index.append({
+                    "id":         clause["id"],
+                    "type":       "clause",
+                    "number":     clause.get("number", ""),
+                    "title":      clause.get("title", ""),
+                    "text":       full_text,
+                    "snippet":    snippet[:200],
+                    "breadcrumb": cl_label,
+                    "page":       clause.get("page_span", [0])[0],
+                })
 
     return index
