@@ -1,0 +1,21 @@
+# secrets — never commit these
+.env
+ 
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+ 
+# Output data
+storage/output/
+*.json
+ 
+# OS
+.DS_Store
+Thumbs.db
+ 
+# Node (viewer)
+viewer/node_modules/
+viewer/dist/
+ 
