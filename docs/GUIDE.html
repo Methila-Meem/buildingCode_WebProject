@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Code Web Project — System Guide</title>
+<style>
+  /* ── Base ── */
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f8f9fb;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ── Layout ── */
+  .page-wrap {
+    display: flex;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    gap: 40px;
+  }
+  .sidebar {
+    flex: 0 0 240px;
+    position: sticky;
+    top: 24px;
+    height: fit-content;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e6ea;
+    padding: 20px 16px;
+  }
+  .content {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e2e6ea;
+    padding: 48px 56px;
+  }
+
+  /* ── Sidebar TOC ── */
+  .sidebar h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin: 0 0 12px;
+    padding: 0;
+    border: none;
+  }
+  .sidebar .toc ul  { list-style: none; margin: 0; padding: 0; }
+  .sidebar .toc li  { margin: 0; padding: 0; }
+  .sidebar .toc a   {
+    display: block;
+    font-size: 13px;
+    color: #374151;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 5px;
+    line-height: 1.4;
+  }
+  .sidebar .toc a:hover { background: #f0f4ff; color: #2563eb; }
+  .sidebar .toc ul ul a { padding-left: 20px; font-size: 12px; color: #6b7280; }
+  .sidebar .toc ul ul ul a { padding-left: 34px; font-size: 11.5px; }
+
+  /* ── Header banner ── */
+  .doc-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    padding: 36px 56px 32px;
+    margin: -48px -56px 40px;
+  }
+  .doc-header h1 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    border: none;
+  }
+  .doc-header .subtitle {
+    font-size: 14px;
+    opacity: .8;
+    margin: 0;
+  }
+
+  /* ── Typography ── */
+  h1, h2, h3, h4 {
+    color: #1e3a5f;
+    font-weight: 700;
+    margin-top: 2em;
+    margin-bottom: .5em;
+    line-height: 1.3;
+  }
+  h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; }
+  h2 { font-size: 19px; border-bottom: 1px solid #e2e6ea; padding-bottom: 6px; }
+  h3 { font-size: 15.5px; color: #374151; }
+  h4 { font-size: 14px; color: #4b5563; }
+  p  { margin: .6em 0 1em; }
+  a  { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  strong { color: #1e3a5f; }
+  hr {
+    border: none;
+    border-top: 1px solid #e2e6ea;
+    margin: 2.5em 0;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 1.2em 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  }
+  thead tr {
+    background: #1e3a5f;
+    color: #fff;
+  }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  tbody tr:nth-child(odd)  { background: #f8f9fb; }
+  tbody tr:nth-child(even) { background: #fff; }
+  tbody tr:hover           { background: #eef2ff; }
+  td { padding: 9px 14px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+
+  /* ── Code ── */
+  code {
+    background: #f1f5f9;
+    color: #d63384;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12.5px;
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.6;
+    margin: 1em 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* ── Blockquote / callout ── */
+  blockquote {
+    border-left: 4px solid #2563eb;
+    margin: 1em 0;
+    padding: 10px 16px;
+    background: #eff6ff;
+    border-radius: 0 6px 6px 0;
+    color: #1e40af;
+    font-size: 14px;
+  }
+
+  /* ── Lists ── */
+  ul, ol { padding-left: 1.6em; }
+  li { margin-bottom: .3em; }
+
+  /* ── Print ── */
+  @media print {
+    .sidebar { display: none; }
+    .page-wrap { padding: 0; }
+    .content { border: none; border-radius: 0; padding: 24px 32px; }
+    .doc-header { border-radius: 0; margin: -24px -32px 32px; }
+    pre { white-space: pre-wrap; word-break: break-all; }
+  }
+  @media (max-width: 768px) {
+    .sidebar  { display: none; }
+    .content  { padding: 28px 20px; }
+    .doc-header { padding: 24px 20px 20px; margin: -28px -20px 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <aside class="sidebar">
+    <h2>On this page</h2>
+    <nav class="toc"><div class="toc"><span class="toctitle">Contents</span><ul>
+<li><a href="#building-code-web-project-system-guide">Building Code Web Project — System Guide</a><ul>
+<li><a href="#table-of-contents">Table of Contents</a></li>
+<li><a href="#1-system-architecture">1. System Architecture</a><ul>
+<li><a href="#end-to-end-flow">End-to-End Flow</a></li>
+<li><a href="#key-design-decisions">Key Design Decisions</a></li>
+</ul>
+</li>
+<li><a href="#2-prerequisites-installation">2. Prerequisites &amp; Installation</a><ul>
+<li><a href="#system-requirements">System Requirements</a></li>
+<li><a href="#step-by-step-installation">Step-by-Step Installation</a></li>
+</ul>
+</li>
+<li><a href="#3-configuration">3. Configuration</a><ul>
+<li><a href="#api-keys">API Keys</a></li>
+<li><a href="#environment-validation">Environment Validation</a></li>
+</ul>
+</li>
+<li><a href="#4-running-the-pipeline">4. Running the Pipeline</a><ul>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#pipeline-steps">Pipeline Steps</a></li>
+<li><a href="#command-line-flags">Command-Line Flags</a></li>
+<li><a href="#caching">Caching</a></li>
+<li><a href="#expected-output">Expected Output</a></li>
+</ul>
+</li>
+<li><a href="#5-data-model">5. Data Model</a><ul>
+<li><a href="#contentitem-types">ContentItem types</a></li>
+<li><a href="#table-structure">Table structure</a></li>
+<li><a href="#reference-structure">Reference structure</a></li>
+<li><a href="#note-reference-structure">Note reference structure</a></li>
+<li><a href="#id-naming-conventions">ID Naming Conventions</a></li>
+</ul>
+</li>
+<li><a href="#6-module-reference">6. Module Reference</a><ul>
+<li><a href="#61-ingestion-datalab_clientpy">6.1 Ingestion — datalab_client.py</a></li>
+<li><a href="#62-parser-structure_parserpy">6.2 Parser — structure_parser.py</a></li>
+<li><a href="#63-parser-reference_linkerpy">6.3 Parser — reference_linker.py</a></li>
+<li><a href="#64-parser-ai_enhancerpy">6.4 Parser — ai_enhancer.py</a></li>
+<li><a href="#65-storage-document_storepy">6.5 Storage — document_store.py</a></li>
+<li><a href="#66-api-apimainpy">6.6 API — api/main.py</a></li>
+<li><a href="#67-viewer-viewer_streamlitpy">6.7 Viewer — viewer_streamlit.py</a></li>
+</ul>
+</li>
+<li><a href="#7-viewer-usage-guide">7. Viewer Usage Guide</a><ul>
+<li><a href="#browse-mode">Browse Mode</a></li>
+<li><a href="#search-mode">Search Mode</a></li>
+<li><a href="#flagged-issues-mode">Flagged Issues Mode</a></li>
+<li><a href="#stats-raw-mode">Stats &amp; Raw Mode</a></li>
+</ul>
+</li>
+<li><a href="#8-rest-api-reference">8. REST API Reference</a><ul>
+<li><a href="#get">GET /</a></li>
+<li><a href="#get-document">GET /document</a></li>
+<li><a href="#get-documentsummary">GET /document/summary</a></li>
+<li><a href="#get-sectionsection_id">GET /section/{section_id}</a></li>
+<li><a href="#get-clauseclause_id">GET /clause/{clause_id}</a></li>
+<li><a href="#get-searchqterm">GET /search?q={term}</a></li>
+<li><a href="#get-referencesnode_id">GET /references/{node_id}</a></li>
+</ul>
+</li>
+<li><a href="#9-testing-with-different-pdfs">9. Testing with Different PDFs</a><ul>
+<li><a href="#what-pdfs-work-well">What PDFs Work Well</a></li>
+<li><a href="#step-by-step-testing-a-new-pdf">Step-by-Step: Testing a New PDF</a></li>
+<li><a href="#adapting-regex-patterns-for-different-document-styles">Adapting Regex Patterns for Different Document Styles</a></li>
+</ul>
+</li>
+<li><a href="#10-troubleshooting">10. Troubleshooting</a><ul>
+<li><a href="#modulenotfounderror-no-module-named-dotenv">ModuleNotFoundError: No module named 'dotenv'</a></li>
+<li><a href="#error-datalab_api_key-is-not-set">[ERROR] DATALAB_API_KEY is not set</a></li>
+<li><a href="#filenotfounderror-document-not-found-at-storageoutputstructured_documentjson">FileNotFoundError: Document not found at storage/output/structured_document.json</a></li>
+<li><a href="#datalab-job-did-not-complete-within-300-seconds">[Datalab] Job did not complete within 300 seconds</a></li>
+<li><a href="#viewer-shows-blank-content-no-clauses">Viewer shows blank content / no clauses</a></li>
+<li><a href="#tables-cut-off-at-the-bottom">Tables cut off at the bottom</a></li>
+<li><a href="#references-show-0-resolution">References show 0% resolution</a></li>
+</ul>
+</li>
+<li><a href="#11-known-limitations">11. Known Limitations</a></li>
+<li><a href="#12-extending-the-system">12. Extending the System</a><ul>
+<li><a href="#adding-a-react-frontend">Adding a React Frontend</a></li>
+<li><a href="#switching-to-a-database">Switching to a Database</a></li>
+<li><a href="#multi-document-support">Multi-Document Support</a></li>
+<li><a href="#adding-more-ai-enhancement">Adding More AI Enhancement</a></li>
+<li><a href="#supporting-other-languages">Supporting Other Languages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+  </aside>
+
+  <main class="content">
+    <div class="doc-header">
+      <h1>Building Code Web Project</h1>
+      <p class="subtitle">System Guide &mdash; Setup, Architecture &amp; Reference</p>
+    </div>
+    <h1 id="building-code-web-project-system-guide">Building Code Web Project — System Guide</h1>
+<p>Complete technical documentation for setup, architecture, data model, and testing.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-system-architecture">System Architecture</a></li>
+<li><a href="#2-prerequisites--installation">Prerequisites &amp; Installation</a></li>
+<li><a href="#3-configuration">Configuration</a></li>
+<li><a href="#4-running-the-pipeline">Running the Pipeline</a></li>
+<li><a href="#5-data-model">Data Model</a></li>
+<li><a href="#6-module-reference">Module Reference</a></li>
+<li>6.1 <a href="#61-ingestion--datalab_clientpy">Ingestion — datalab_client.py</a></li>
+<li>6.2 <a href="#62-parser--structure_parserpy">Parser — structure_parser.py</a></li>
+<li>6.3 <a href="#63-parser--reference_linkerpy">Parser — reference_linker.py</a></li>
+<li>6.4 <a href="#64-parser--ai_enhancerpy">Parser — ai_enhancer.py</a></li>
+<li>6.5 <a href="#65-storage--document_storepy">Storage — document_store.py</a></li>
+<li>6.6 <a href="#66-api--mainpy">API — main.py</a></li>
+<li>6.7 <a href="#67-viewer--viewer_streamlitpy">Viewer — viewer_streamlit.py</a></li>
+<li><a href="#7-viewer-usage-guide">Viewer Usage Guide</a></li>
+<li><a href="#8-rest-api-reference">REST API Reference</a></li>
+<li><a href="#9-testing-with-different-pdfs">Testing with Different PDFs</a></li>
+<li><a href="#10-troubleshooting">Troubleshooting</a></li>
+<li><a href="#11-known-limitations">Known Limitations</a></li>
+<li><a href="#12-extending-the-system">Extending the System</a></li>
+</ol>
+<hr />
+<h2 id="1-system-architecture">1. System Architecture</h2>
+<h3 id="end-to-end-flow">End-to-End Flow</h3>
+<pre class="highlight"><code>┌─────────────┐     ┌──────────────────┐     ┌──────────────────────┐
+│  PDF File   │────▶│ Datalab Marker   │────▶│  Raw JSON Cache      │
+│             │     │ API (cloud)      │     │  storage/raw_*.json  │
+└─────────────┘     └──────────────────┘     └──────────┬───────────┘
+                                                         │
+                                                         ▼
+                                             ┌──────────────────────┐
+                                             │  structure_parser.py │
+                                             │  Builds Document     │
+                                             │  tree + extracts     │
+                                             │  figures             │
+                                             └──────────┬───────────┘
+                                                         │
+                                                         ▼
+                                             ┌──────────────────────┐
+                                             │  reference_linker.py │
+                                             │  Resolves cross-refs │
+                                             │  &amp; appendix notes    │
+                                             └──────────┬───────────┘
+                                                         │
+                                          (optional)     ▼
+                                             ┌──────────────────────┐
+                                             │  ai_enhancer.py      │
+                                             │  Claude: table       │
+                                             │  column semantics    │
+                                             └──────────┬───────────┘
+                                                         │
+                                                         ▼
+                                             ┌──────────────────────┐
+                                             │  structured_         │
+                                             │  document.json       │
+                                             │  (1–2 MB typical)    │
+                                             └──────┬───────┬───────┘
+                                                    │       │
+                                          ┌─────────┘       └──────────┐
+                                          ▼                             ▼
+                             ┌────────────────────┐      ┌─────────────────────┐
+                             │  FastAPI :8000      │      │  Streamlit :8501    │
+                             │  REST endpoints     │      │  Interactive viewer │
+                             └────────────────────┘      └─────────────────────┘
+</code></pre>
+
+<h3 id="key-design-decisions">Key Design Decisions</h3>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Datalab Marker for extraction</td>
+<td>Handles complex PDF layout, tables, equations, images better than pdfplumber/pymupdf alone</td>
+</tr>
+<tr>
+<td>Single JSON file storage</td>
+<td>Simple, portable, no database dependency for the prototype</td>
+</tr>
+<tr>
+<td>Streamlit viewer</td>
+<td>Rapid iteration without a separate frontend build step</td>
+</tr>
+<tr>
+<td>FastAPI alongside Streamlit</td>
+<td>Enables future React/headless integrations without rewriting</td>
+</tr>
+<tr>
+<td>KaTeX for math rendering</td>
+<td>Browser-native, no server-side LaTeX processing needed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-prerequisites-installation">2. Prerequisites &amp; Installation</h2>
+<h3 id="system-requirements">System Requirements</h3>
+<ul>
+<li><strong>Python</strong> 3.10 or higher</li>
+<li><strong>pip</strong> (comes with Python)</li>
+<li>Internet access for the Datalab API call (first run only per PDF)</li>
+<li>~500 MB disk space for a typical 150-page PDF (raw cache + structured output)</li>
+</ul>
+<h3 id="step-by-step-installation">Step-by-Step Installation</h3>
+<p><strong>1. Get the code</strong></p>
+<pre class="highlight"><code class="language-bash">git clone &lt;repository-url&gt;
+cd buildingCodeWebProject
+</code></pre>
+
+<p><strong>2. Create a virtual environment</strong> (strongly recommended)</p>
+<pre class="highlight"><code class="language-bash"># Windows
+python -m venv .venv
+.venv\Scripts\activate
+
+# macOS / Linux
+python3 -m venv .venv
+source .venv/bin/activate
+</code></pre>
+
+<p><strong>3. Install Python dependencies</strong></p>
+<pre class="highlight"><code class="language-bash">pip install -r requirements.txt
+</code></pre>
+
+<p>The dependencies are:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requests</code></td>
+<td>HTTP calls to Datalab API</td>
+</tr>
+<tr>
+<td><code>anthropic</code></td>
+<td>Claude API SDK</td>
+</tr>
+<tr>
+<td><code>pdfplumber</code></td>
+<td>PDF reading fallback</td>
+</tr>
+<tr>
+<td><code>pymupdf</code></td>
+<td>PDF reading fallback</td>
+</tr>
+<tr>
+<td><code>fastapi</code></td>
+<td>REST API framework</td>
+</tr>
+<tr>
+<td><code>uvicorn</code></td>
+<td>ASGI server for FastAPI</td>
+</tr>
+<tr>
+<td><code>python-multipart</code></td>
+<td>File upload support for FastAPI</td>
+</tr>
+<tr>
+<td><code>python-dotenv</code></td>
+<td>Load <code>.env</code> file</td>
+</tr>
+<tr>
+<td><code>streamlit</code></td>
+<td>Web viewer framework</td>
+</tr>
+<tr>
+<td><code>pandas</code></td>
+<td>Data utilities</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-configuration">3. Configuration</h2>
+<h3 id="api-keys">API Keys</h3>
+<p>Create a <code>.env</code> file in the project root directory:</p>
+<pre class="highlight"><code class="language-env">DATALAB_API_KEY=dl_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+</code></pre>
+
+<p><strong>Getting a Datalab key:</strong><br />
+1. Create an account at https://www.datalab.to<br />
+2. Navigate to API Keys in your dashboard<br />
+3. Generate a new key</p>
+<p><strong>Getting an Anthropic key:</strong><br />
+1. Create an account at https://console.anthropic.com<br />
+2. Navigate to API Keys<br />
+3. Generate a new key (only needed if using <code>--ai</code> flag)</p>
+<h3 id="environment-validation">Environment Validation</h3>
+<p>Both clients validate their keys on startup and print a clear error if missing:</p>
+<pre class="highlight"><code>[ERROR] DATALAB_API_KEY is not set.
+Steps to fix:
+  1. Open your .env file
+  2. Set DATALAB_API_KEY=your_actual_key
+  3. Get a key at https://www.datalab.to/app/keys
+</code></pre>
+
+<hr />
+<h2 id="4-running-the-pipeline">4. Running the Pipeline</h2>
+<h3 id="basic-usage">Basic Usage</h3>
+<pre class="highlight"><code class="language-bash">python main.py path/to/your_document.pdf
+</code></pre>
+
+<h3 id="pipeline-steps">Pipeline Steps</h3>
+<p>The pipeline runs four sequential steps:</p>
+<pre class="highlight"><code>[Step 1/4] Extracting PDF...
+  → Submits PDF to Datalab API (or loads from cache)
+  → Saves/loads: storage/raw_{pdf_stem}.json
+
+[Step 2/4] Parsing document structure...
+  → Builds Chapter → Section → Clause hierarchy
+  → Extracts tables, figures, equations
+  → Saves figures to: storage/figures/
+
+[Step 3/4] Linking internal references...
+  → Resolves cross-references (Sentence X, Table X, etc.)
+  → Resolves appendix note refs (See Note A-X.X.X.(N).)
+  → Prints resolution statistics
+
+[Step 4/4] Saving / AI enhancement...
+  → Writes: storage/output/structured_document.json
+</code></pre>
+
+<h3 id="command-line-flags">Command-Line Flags</h3>
+<pre class="highlight"><code class="language-bash"># Re-call Datalab API (skip cache) — use when you have a new version of the PDF
+python main.py doc.pdf --force-extract
+
+# Enable Claude AI enhancement (adds semantic column labels to tables)
+python main.py doc.pdf --ai
+
+# Both flags
+python main.py doc.pdf --force-extract --ai
+</code></pre>
+
+<h3 id="caching">Caching</h3>
+<p>On the first run, the Datalab API response is saved to <code>storage/raw_{pdf_stem}.json</code>. Every subsequent run loads from this cache instead of calling the API. This means:</p>
+<ul>
+<li>Parser/viewer changes can be tested at <strong>zero API cost</strong></li>
+<li>Only use <code>--force-extract</code> when the PDF itself changes</li>
+</ul>
+<h3 id="expected-output">Expected Output</h3>
+<pre class="highlight"><code>============================================================
+  EXTRACTION COMPLETE
+============================================================
+  Document:    Part 4 Structural Design
+  Pages:       146
+  Chapters:    1
+  Sections:    31
+  Clauses:     202
+  Tables:      28
+  References:  366 found, 93.2% resolved
+  Output:      storage\output\structured_document.json
+============================================================
+</code></pre>
+
+<hr />
+<h2 id="5-data-model">5. Data Model</h2>
+<p>The structured document is a nested JSON tree:</p>
+<pre class="highlight"><code>Document
+  ├── title: str
+  ├── source_pdf: str
+  ├── total_pages: int
+  ├── extracted_at: str  (ISO timestamp)
+  ├── _stats: { reference counts }
+  └── chapters: [Chapter]
+        └── Chapter
+              ├── id: &quot;CH-4&quot;
+              ├── number: &quot;4&quot;
+              ├── title: &quot;Structural Design&quot;
+              └── sections: [Section]
+                    └── Section
+                          ├── id: &quot;SEC-4-1&quot;
+                          ├── number: &quot;4.1&quot;
+                          ├── title: &quot;Loads&quot;
+                          └── clauses: [Clause]
+                                └── Clause
+                                      ├── id: &quot;CL-4-1-6-5&quot;
+                                      ├── number: &quot;4.1.6.5&quot;
+                                      ├── title: &quot;...&quot;
+                                      ├── page_span: [int, ...]
+                                      ├── content: [ContentItem]
+                                      ├── tables: [Table]
+                                      ├── figures: [Figure]
+                                      ├── equations: [Equation]
+                                      ├── references: [Reference]
+                                      └── note_refs: [NoteRef]
+</code></pre>
+
+<h3 id="contentitem-types">ContentItem types</h3>
+<p>Every piece of clause body content is stored as an ordered <code>content[]</code> array to preserve PDF reading order:</p>
+<table>
+<thead>
+<tr>
+<th>type</th>
+<th>Fields</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>text</code></td>
+<td><code>value: str</code></td>
+<td>Plain paragraph or inline-math text (<code>$...$</code> notation)</td>
+</tr>
+<tr>
+<td><code>sub_clause</code></td>
+<td><code>marker: str</code>, <code>value: str</code></td>
+<td>Labelled sub-item, e.g. <code>(a)</code>, <code>i.</code>, <code>a)</code></td>
+</tr>
+<tr>
+<td><code>equation</code></td>
+<td><code>latex: str</code>, <code>id: str</code></td>
+<td>Display equation, one per <code>&lt;math&gt;</code> block</td>
+</tr>
+<tr>
+<td><code>figure</code></td>
+<td><code>figure_id: str</code>, <code>image_path: str</code>, <code>caption: str</code></td>
+<td>Embedded image</td>
+</tr>
+<tr>
+<td><code>table</code></td>
+<td><code>table_id: str</code>, <code>value: str</code></td>
+<td>Reference to a table in <code>tables[]</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="table-structure">Table structure</h3>
+<pre class="highlight"><code class="language-json">{
+  &quot;id&quot;: &quot;TBL-14&quot;,
+  &quot;caption&quot;: &quot;Table 4.1.6.2.-B ...&quot;,
+  &quot;headers&quot;: [&quot;Value of $l_c C_w^2$&quot;, &quot;Value of $C_w$ / 1.0 / Value of $C_b$&quot;],
+  &quot;rows&quot;: [[&quot;70&quot;, &quot;0.80&quot;], [&quot;80&quot;, &quot;0.82&quot;]],
+  &quot;page&quot;: 42,
+  &quot;column_semantics&quot;: []
+}
+</code></pre>
+
+<h3 id="reference-structure">Reference structure</h3>
+<pre class="highlight"><code class="language-json">{
+  &quot;text&quot;: &quot;Article 4.1.6.5.&quot;,
+  &quot;kind&quot;: &quot;Article&quot;,
+  &quot;target_id&quot;: &quot;CL-4-1-6-5&quot;,
+  &quot;resolved&quot;: true
+}
+</code></pre>
+
+<h3 id="note-reference-structure">Note reference structure</h3>
+<pre class="highlight"><code class="language-json">{
+  &quot;raw&quot;: &quot;(See Note A-4.1.6.16.(6).)&quot;,
+  &quot;note_ref&quot;: &quot;A-4.1.6.16.(6).&quot;,
+  &quot;target_ids&quot;: [&quot;CL-AUTO-49&quot;],
+  &quot;resolved&quot;: true
+}
+</code></pre>
+
+<h3 id="id-naming-conventions">ID Naming Conventions</h3>
+<table>
+<thead>
+<tr>
+<th>Node type</th>
+<th>Pattern</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chapter</td>
+<td><code>CH-{n}</code></td>
+<td><code>CH-4</code></td>
+</tr>
+<tr>
+<td>Section</td>
+<td><code>SEC-{n}-{m}[-{k}…]</code></td>
+<td><code>SEC-4-1</code>, <code>SEC-4-1-6</code></td>
+</tr>
+<tr>
+<td>Clause</td>
+<td><code>CL-{n}-{m}-{k}[-{j}…]</code></td>
+<td><code>CL-4-1-6-5</code></td>
+</tr>
+<tr>
+<td>Unnumbered clause</td>
+<td><code>CL-AUTO-{n}</code></td>
+<td><code>CL-AUTO-39</code></td>
+</tr>
+<tr>
+<td>Table</td>
+<td><code>TBL-{n}</code></td>
+<td><code>TBL-14</code></td>
+</tr>
+<tr>
+<td>Figure</td>
+<td><code>FIG-{n}</code></td>
+<td><code>FIG-3</code></td>
+</tr>
+<tr>
+<td>Equation</td>
+<td><code>EQ-{n}</code></td>
+<td><code>EQ-2</code></td>
+</tr>
+</tbody>
+</table>
+<p>Dots in numbers are replaced with hyphens: <code>4.1.6.5</code> → <code>CL-4-1-6-5</code>.</p>
+<hr />
+<h2 id="6-module-reference">6. Module Reference</h2>
+<h3 id="61-ingestion-datalab_clientpy">6.1 Ingestion — <code>datalab_client.py</code></h3>
+<p>Handles PDF submission and result retrieval from the Datalab Marker API.</p>
+<p><strong>Key parameters sent to Datalab:</strong></p>
+<pre class="highlight"><code class="language-python">{
+    &quot;output_format&quot;: &quot;json&quot;,
+    &quot;use_llm&quot;: &quot;true&quot;,       # enables LLM-enhanced extraction
+    &quot;extract_images&quot;: &quot;false&quot;
+}
+</code></pre>
+
+<p><strong>Polling:</strong> 5-second interval, 300-second timeout. Raises <code>TimeoutError</code> if the job does not complete.</p>
+<p><strong>Cache path:</strong> <code>storage/raw_{pdf_stem}.json</code> — derived from the PDF filename (spaces → underscores).</p>
+<hr />
+<h3 id="62-parser-structure_parserpy">6.2 Parser — <code>structure_parser.py</code></h3>
+<p>Converts the Datalab JSON into the structured document tree.</p>
+<p><strong>Entry point:</strong></p>
+<pre class="highlight"><code class="language-python">from parser.structure_parser import parse_datalab_output
+
+document_dict = parse_datalab_output(
+    datalab_result,
+    source_pdf=&quot;my_doc.pdf&quot;,
+    figures_dir=&quot;storage/figures&quot;
+)
+</code></pre>
+
+<p><strong>Heading-to-hierarchy mapping:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Heading level</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h1</code></td>
+<td>New Chapter</td>
+</tr>
+<tr>
+<td><code>h2</code></td>
+<td>New Section (if matches <code>N.N</code> pattern)</td>
+</tr>
+<tr>
+<td><code>h3</code></td>
+<td>New Section (if matches <code>N.N.N</code>); else label clause</td>
+</tr>
+<tr>
+<td><code>h4</code></td>
+<td>New Clause (checks 4-part number first, then 3-part)</td>
+</tr>
+<tr>
+<td><code>h5</code></td>
+<td>Notes / Appendix entries → <code>CL-AUTO-N</code></td>
+</tr>
+<tr>
+<td><code>h6</code></td>
+<td>Bold text item in current clause; or new unnumbered clause</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Text block auto-promotion:</strong> Plain text blocks whose first line matches a structural number pattern are promoted to Section or Clause automatically, with duplicate-ID guards.</p>
+<p><strong>Math handling:</strong><br />
+- <code>&lt;math&gt;</code> tags in body text → <code>$...$</code> inline notation (rendered by Streamlit/KaTeX)<br />
+- <code>&lt;math&gt;</code> tags in Equation blocks → one <code>EQ-N</code> ContentItem per tag</p>
+<p><strong>Table merging:</strong> Cross-page <code>(continued)</code> table fragments are detected and merged into the base table after parsing. Cross-page rowspan carry is applied via a "sandwich detection" heuristic for 2-column use/load tables.</p>
+<p><strong>Decorative image filtering:</strong> Images with alt text under 60 characters matching patterns like <code>"horizontal line"</code>, <code>"divider"</code>, <code>"decorative"</code> etc. are silently dropped.</p>
+<hr />
+<h3 id="63-parser-reference_linkerpy">6.3 Parser — <code>reference_linker.py</code></h3>
+<p>Scans all clause content for cross-references and resolves them against the document ID index.</p>
+<p><strong>Entry point:</strong></p>
+<pre class="highlight"><code class="language-python">from parser.reference_linker import link_references
+
+document_dict = link_references(document_dict)
+</code></pre>
+
+<p><strong>Standard cross-references</strong> (added to <code>clause.references[]</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Example</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sentence / Article / Clause</td>
+<td><code>Sentence 4.1.6.5.(1)</code></td>
+<td><code>CL-4-1-6-5</code></td>
+</tr>
+<tr>
+<td>Section / Subsection</td>
+<td><code>Section 4.1</code></td>
+<td><code>SEC-4-1</code></td>
+</tr>
+<tr>
+<td>Table</td>
+<td><code>Table 4.1.3.2.-B</code></td>
+<td>caption lookup → <code>TBL-N</code></td>
+</tr>
+<tr>
+<td>Figure</td>
+<td><code>Figure 4.1.6.5.-A</code></td>
+<td>caption lookup → <code>FIG-N</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Appendix note references</strong> (added to <code>clause.note_refs[]</code>):</p>
+<p>Pattern: <code>(See Note A-4.1.6.16.(6).)</code> → resolved via a two-pass note index:<br />
+- Pass 1: Clauses whose titles start with <code>A-</code> are indexed<br />
+- Pass 2: Embedded text items inside <code>CL-AUTO</code> clauses that start with <code>A-</code> are also indexed</p>
+<p>Resolution tries exact match first (<code>A-4.1.6.16.(6)</code>), then base match (<code>A-4.1.6.16</code>).</p>
+<p><strong>Important regex fix:</strong> The note patterns use <code>\d+(?:\.\d+)*</code> (not <code>[\d\.]+</code>) to correctly parse sub-note identifiers like <code>A-4.1.6.16.(6)</code>. The naive <code>[\d\.]+</code> greedily consumes the dot before <code>.(6)</code> making the sub-clause suffix unreachable.</p>
+<hr />
+<h3 id="64-parser-ai_enhancerpy">6.4 Parser — <code>ai_enhancer.py</code></h3>
+<p>Optional Claude-powered enhancement. Currently adds semantic column labels to tables.</p>
+<p><strong>Entry point:</strong></p>
+<pre class="highlight"><code class="language-python">from parser.ai_enhancer import enhance_document
+
+document_dict = enhance_document(document_dict, use_ai_for_tables=True)
+</code></pre>
+
+<p>Writes <code>column_semantics[]</code> on each table — a list of <code>{original, semantic}</code> dicts mapping raw header strings to descriptive labels (e.g. <code>"Col 3"</code> → <code>"Factored Resistance (kN/m²)"</code>).</p>
+<p>Only runs when <code>--ai</code> is passed to <code>main.py</code>.</p>
+<hr />
+<h3 id="65-storage-document_storepy">6.5 Storage — <code>document_store.py</code></h3>
+<p>Simple JSON file read/write plus search index builder.</p>
+<pre class="highlight"><code class="language-python">from storage.document_store import save_document, load_document, build_search_index
+
+save_document(document_dict)          # → storage/output/structured_document.json
+doc = load_document()                 # loads structured_document.json
+index = build_search_index(doc)       # flat list for /search endpoint
+</code></pre>
+
+<p><code>build_search_index()</code> returns one entry per clause containing:<br />
+- <code>id</code>, <code>type</code>, <code>number</code>, <code>title</code><br />
+- <code>text</code> — all content items concatenated<br />
+- <code>snippet</code> — first 200 chars of first text item<br />
+- <code>breadcrumb</code> — <code>"Chapter N &gt; M.K &gt; L"</code><br />
+- <code>page</code> — first page of the clause</p>
+<hr />
+<h3 id="66-api-apimainpy">6.6 API — <code>api/main.py</code></h3>
+<p>FastAPI application serving the structured document.</p>
+<p><strong>Starting the server:</strong></p>
+<pre class="highlight"><code class="language-bash">uvicorn api.main:app --reload --port 8000
+</code></pre>
+
+<p>The document is loaded once at startup and cached as module globals (<code>_document_cache</code>, <code>_search_index_cache</code>). CORS is configured for <code>http://localhost:8501</code> (Streamlit).</p>
+<hr />
+<h3 id="67-viewer-viewer_streamlitpy">6.7 Viewer — <code>viewer_streamlit.py</code></h3>
+<p>The main user interface. Reads <code>storage/output/structured_document.json</code> directly.</p>
+<p><strong>Starting the viewer:</strong></p>
+<pre class="highlight"><code class="language-bash">streamlit run viewer_streamlit.py
+</code></pre>
+
+<p><strong>Deep linking:</strong> Append <code>?clause=CL-4-1-6-5</code> to the URL to navigate directly to a clause. The viewer reads <code>st.query_params["clause"]</code> on load.</p>
+<p><strong>Math rendering:</strong> Inline <code>$...$</code> expressions are rendered as KaTeX by Streamlit's markdown engine. Display equations use <code>st.latex()</code>. HTML tables render math via the KaTeX CDN (<code>v0.16.9</code>) inside an iframe.</p>
+<p><strong>Inline note buttons:</strong> Text items containing <code>(See Note A-X.X.X.(N).)</code> are split and the note segment is rendered as a clickable button if the note resolves to a clause in this PDF, or as a styled amber badge if it is in an external PDF.</p>
+<hr />
+<h2 id="7-viewer-usage-guide">7. Viewer Usage Guide</h2>
+<h3 id="browse-mode">Browse Mode</h3>
+<ol>
+<li>Select a <strong>Chapter</strong> in the left sidebar</li>
+<li>Select a <strong>Section</strong></li>
+<li>Clause content appears in the main area — tabs for ≤6 clauses, a dropdown for more</li>
+</ol>
+<p><strong>Navigating references:</strong><br />
+- Blue buttons in the clause body = resolved cross-references → click to jump<br />
+- Grey badges = unresolved (target is in a different PDF)<br />
+- Green buttons = resolved appendix notes → click to jump to appendix clause<br />
+- Amber badges = external appendix notes</p>
+<h3 id="search-mode">Search Mode</h3>
+<p>Type two or more characters to search across all clause titles and body text. Results show a snippet with the matching term in context. Click any result to navigate.</p>
+<h3 id="flagged-issues-mode">Flagged Issues Mode</h3>
+<p>While browsing, click the <strong>🚩 Flag an issue</strong> expander inside any clause to mark a parsing problem. Choose an issue type and add a note. All flags are saved to <code>storage/output/flagged_issues.json</code> and reviewable in this tab.</p>
+<p><strong>Issue types available:</strong><br />
+- Missing text, Wrong hierarchy, Table error, Sub-clause split wrong<br />
+- Equation wrong, Figure missing, Figure wrong position<br />
+- Reference not resolved, Wrong page number, Other</p>
+<h3 id="stats-raw-mode">Stats &amp; Raw Mode</h3>
+<p>Shows:<br />
+- Per-chapter clause and section counts<br />
+- Reference resolution rate<br />
+- Table of all unresolved references per clause<br />
+- Download button for the full structured JSON</p>
+<hr />
+<h2 id="8-rest-api-reference">8. REST API Reference</h2>
+<p>Base URL: <code>http://localhost:8000</code></p>
+<h3 id="get">GET /</h3>
+<p>Health check.</p>
+<pre class="highlight"><code class="language-json">{&quot;status&quot;: &quot;ok&quot;, &quot;message&quot;: &quot;Building Code API is running&quot;}
+</code></pre>
+
+<h3 id="get-document">GET /document</h3>
+<p>Returns the full document tree. Can be large (1–2 MB).</p>
+<h3 id="get-documentsummary">GET /document/summary</h3>
+<p>Lightweight navigation tree. Returns chapter/section structure with clause counts but no clause body content. Use this for sidebar navigation in a frontend.</p>
+<h3 id="get-sectionsection_id">GET /section/{section_id}</h3>
+<p>Returns a single section with all its clauses.</p>
+<pre class="highlight"><code>GET /section/SEC-4-1-6
+</code></pre>
+
+<h3 id="get-clauseclause_id">GET /clause/{clause_id}</h3>
+<p>Returns a single clause with a <code>_breadcrumb</code> context object.</p>
+<pre class="highlight"><code>GET /clause/CL-4-1-6-5
+</code></pre>
+
+<p>Response includes a <code>_breadcrumb</code> field:</p>
+<pre class="highlight"><code class="language-json">&quot;_breadcrumb&quot;: {
+    &quot;chapter&quot;: {&quot;id&quot;: &quot;CH-4&quot;, &quot;title&quot;: &quot;Structural Design&quot;},
+    &quot;section&quot;: {&quot;id&quot;: &quot;SEC-4-1-6&quot;, &quot;title&quot;: &quot;Snow Loads&quot;}
+}
+</code></pre>
+
+<h3 id="get-searchqterm">GET /search?q={term}</h3>
+<p>Full-text search. Minimum 2 characters. Returns up to 50 results.</p>
+<pre class="highlight"><code>GET /search?q=snow+load
+</code></pre>
+
+<pre class="highlight"><code class="language-json">{
+    &quot;query&quot;: &quot;snow load&quot;,
+    &quot;count&quot;: 12,
+    &quot;results&quot;: [
+        {
+            &quot;id&quot;: &quot;CL-4-1-6-2&quot;,
+            &quot;number&quot;: &quot;4.1.6.2&quot;,
+            &quot;title&quot;: &quot;Specified Snow Load&quot;,
+            &quot;breadcrumb&quot;: &quot;Chapter 4 &gt; 4.1 &gt; 4.1.6&quot;,
+            &quot;snippet&quot;: &quot;...the specified snow load, S, shall be...&quot;,
+            &quot;page&quot;: 38
+        }
+    ]
+}
+</code></pre>
+
+<h3 id="get-referencesnode_id">GET /references/{node_id}</h3>
+<p>Reverse lookup: which clauses contain a reference pointing to this node.</p>
+<pre class="highlight"><code>GET /references/CL-4-1-6-5
+</code></pre>
+
+<hr />
+<h2 id="9-testing-with-different-pdfs">9. Testing with Different PDFs</h2>
+<h3 id="what-pdfs-work-well">What PDFs Work Well</h3>
+<p>The parser is optimised for <strong>structured technical/regulatory documents</strong> such as:</p>
+<ul>
+<li>Building codes (BCBC, NBC, OBC, IBC, Eurocodes)</li>
+<li>Engineering standards (CSA, ASTM, ISO)</li>
+<li>Municipal bylaws with numbered clause hierarchies</li>
+</ul>
+<p>Key characteristics of a compatible PDF:<br />
+- Numbered sections in a hierarchical pattern (e.g. <code>4.1.6.5</code>, <code>Clause 3.2.1</code>)<br />
+- Consistent heading levels (PDF headings → Datalab <code>SectionHeader</code> blocks)<br />
+- HTML tables with <code>&lt;thead&gt;</code> / <code>&lt;tbody&gt;</code> structure<br />
+- Equations in MathML or as image+alt-text</p>
+<h3 id="step-by-step-testing-a-new-pdf">Step-by-Step: Testing a New PDF</h3>
+<p><strong>1. Run the pipeline</strong></p>
+<pre class="highlight"><code class="language-bash">python main.py your_new_document.pdf
+</code></pre>
+
+<p><strong>2. Check the extraction summary</strong></p>
+<p>The pipeline prints:</p>
+<pre class="highlight"><code>Chapters:    X
+Sections:    Y
+Clauses:     Z
+Tables:      N
+References:  NNN found, XX.X% resolved
+</code></pre>
+
+<p>A reference resolution rate below 80% suggests the document numbering pattern differs from the current regex rules.</p>
+<p><strong>3. Open the viewer and spot-check</strong></p>
+<pre class="highlight"><code class="language-bash">streamlit run viewer_streamlit.py
+</code></pre>
+
+<ul>
+<li>Open Browse mode and navigate to a known clause</li>
+<li>Check that the clause hierarchy matches the PDF structure</li>
+<li>Verify a table is rendered correctly</li>
+<li>Search for a term you know exists</li>
+</ul>
+<p><strong>4. Common issues with different PDFs</strong></p>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>What to check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All content in one clause</td>
+<td>Heading levels not detected</td>
+<td>Check if Datalab returns <code>SectionHeader</code> blocks; PDF may use images for headings</td>
+</tr>
+<tr>
+<td>Low reference resolution</td>
+<td>Different numbering pattern</td>
+<td>The PDF may use <code>Clause X.X</code> or <code>Art. X</code> — check <code>REFERENCE_PATTERNS</code> in <code>reference_linker.py</code></td>
+</tr>
+<tr>
+<td>Tables rendering as empty</td>
+<td>Datalab table HTML format differs</td>
+<td>Check the raw JSON for table HTML structure</td>
+</tr>
+<tr>
+<td>Missing equations</td>
+<td>Equations as images only</td>
+<td>Datalab <code>use_llm=true</code> may not have extracted MathML</td>
+</tr>
+<tr>
+<td>Wrong clause hierarchy</td>
+<td>Section numbers have fewer/more parts</td>
+<td>Adjust <code>RE_SECTION</code>, <code>RE_ARTICLE</code>, <code>RE_SENTENCE</code> regex in <code>structure_parser.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>5. Regenerate after fixing the parser</strong></p>
+<p>Since the raw Datalab response is cached, you can fix the parser and re-run at zero cost:</p>
+<pre class="highlight"><code class="language-bash">python main.py your_new_document.pdf   # uses cache, reruns parser only
+</code></pre>
+
+<p><strong>6. Force fresh extraction</strong></p>
+<p>Only needed if the PDF itself has changed:</p>
+<pre class="highlight"><code class="language-bash">python main.py your_new_document.pdf --force-extract
+</code></pre>
+
+<h3 id="adapting-regex-patterns-for-different-document-styles">Adapting Regex Patterns for Different Document Styles</h3>
+<p>If the new document uses different numbering (e.g. <code>Article 3.2.1</code> or <code>Section A.1.2</code>), update these patterns in <code>parser/structure_parser.py</code>:</p>
+<pre class="highlight"><code class="language-python">RE_SECTION   = r'^(?:Section\s+)?(\d+\.\d+)\.?\s*(.*)'
+RE_ARTICLE   = r'^(\d+\.\d+\.\d+)\.?\s*(.*)'
+RE_SENTENCE  = r'^(\d+\.\d+\.\d+\.\d+)\.?\s*(.*)'
+</code></pre>
+
+<p>And in <code>parser/reference_linker.py</code>:</p>
+<pre class="highlight"><code class="language-python">REFERENCE_PATTERNS = [
+    re.compile(
+        r'(?P&lt;kind&gt;Sentence|Article|Subsection|Section|Clause)\s+'
+        r'(?P&lt;ref&gt;\d+(?:\.\d+)*(?:\.\d+)?(?:\([^)]+\))?)',
+        re.IGNORECASE
+    ),
+    ...
+]
+</code></pre>
+
+<hr />
+<h2 id="10-troubleshooting">10. Troubleshooting</h2>
+<h3 id="modulenotfounderror-no-module-named-dotenv"><code>ModuleNotFoundError: No module named 'dotenv'</code></h3>
+<p>The virtual environment is not activated, or dependencies are not installed.</p>
+<pre class="highlight"><code class="language-bash"># Activate venv first
+.venv\Scripts\activate       # Windows
+source .venv/bin/activate    # macOS/Linux
+
+pip install -r requirements.txt
+</code></pre>
+
+<h3 id="error-datalab_api_key-is-not-set"><code>[ERROR] DATALAB_API_KEY is not set</code></h3>
+<p>Your <code>.env</code> file is missing or the key is the placeholder value. Check:</p>
+<pre class="highlight"><code class="language-bash"># Confirm .env exists and has the real key
+cat .env
+</code></pre>
+
+<h3 id="filenotfounderror-document-not-found-at-storageoutputstructured_documentjson"><code>FileNotFoundError: Document not found at storage/output/structured_document.json</code></h3>
+<p>You need to run the pipeline before launching the viewer or API:</p>
+<pre class="highlight"><code class="language-bash">python main.py path/to/your.pdf
+</code></pre>
+
+<h3 id="datalab-job-did-not-complete-within-300-seconds"><code>[Datalab] Job did not complete within 300 seconds</code></h3>
+<p>The PDF is very large or the Datalab API is slow. Options:<br />
+- Retry: run the same command again<br />
+- Split the PDF into smaller parts and process each separately</p>
+<h3 id="viewer-shows-blank-content-no-clauses">Viewer shows blank content / no clauses</h3>
+<p>The parser may not have recognised the heading structure. Check the Stats &amp; Raw tab — if <code>Clauses: 0</code>, the headings are likely images (not text) in the PDF, or the numbering pattern doesn't match the regex.</p>
+<h3 id="tables-cut-off-at-the-bottom">Tables cut off at the bottom</h3>
+<p>Fixed in the current version (dynamic height estimation + <code>scrolling=True</code>). If it still occurs on a specific table, the table is likely extremely wide — use horizontal scrolling.</p>
+<h3 id="references-show-0-resolution">References show 0% resolution</h3>
+<p>The document numbering format differs from the patterns in <code>REFERENCE_PATTERNS</code>. Check the raw JSON (<code>Stats &amp; Raw</code> tab → Download) to see what reference text looks like in the clauses.</p>
+<hr />
+<h2 id="11-known-limitations">11. Known Limitations</h2>
+<table>
+<thead>
+<tr>
+<th>Limitation</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single document</td>
+<td>The pipeline processes one PDF at a time; output overwrites the previous result</td>
+</tr>
+<tr>
+<td>Datalab dependency</td>
+<td>Extraction quality depends on Datalab's LLM-enhanced parser; purely image-based PDFs will produce poor results</td>
+</tr>
+<tr>
+<td>English only</td>
+<td>All regex patterns, heading detection, and reference resolution are English-language specific</td>
+</tr>
+<tr>
+<td>Figure images</td>
+<td><code>extract_images=false</code> is passed to Datalab (cost/speed tradeoff); figures in the viewer show alt text only unless you change this flag</td>
+</tr>
+<tr>
+<td>External references</td>
+<td>References to clauses in other PDF volumes (e.g. <code>See Note A-3.X.X</code>) cannot be resolved and show as amber badges</td>
+</tr>
+<tr>
+<td>No user authentication</td>
+<td>The FastAPI server has no authentication layer</td>
+</tr>
+<tr>
+<td>No multi-document search</td>
+<td>Search operates within a single processed document</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-extending-the-system">12. Extending the System</h2>
+<h3 id="adding-a-react-frontend">Adding a React Frontend</h3>
+<p>The FastAPI CORS config currently allows <code>http://localhost:8501</code> (Streamlit). To add a React frontend on port 3000, update <code>api/main.py</code>:</p>
+<pre class="highlight"><code class="language-python">allow_origins=[
+    &quot;http://localhost:8501&quot;,
+    &quot;http://localhost:3000&quot;,   # add this
+],
+</code></pre>
+
+<h3 id="switching-to-a-database">Switching to a Database</h3>
+<p><code>storage/document_store.py</code> is designed as a swap point. Replace <code>save_document</code> / <code>load_document</code> with PostgreSQL or SQLite calls. The document structure maps naturally to a JSONB column in PostgreSQL.</p>
+<h3 id="multi-document-support">Multi-Document Support</h3>
+<p>The current model uses a fixed output path (<code>structured_document.json</code>). To support multiple documents:<br />
+1. Add a document registry (a simple JSON index file or a database table)<br />
+2. Parameterise <code>load_document(filename)</code> — the signature already accepts a <code>filename</code> argument<br />
+3. Update the FastAPI routes to accept a <code>document_id</code> path parameter</p>
+<h3 id="adding-more-ai-enhancement">Adding More AI Enhancement</h3>
+<p>The <code>ai_enhancer.py</code> module has stubs for:<br />
+- <code>classify_block()</code> — classify ambiguous text blocks<br />
+- <code>should_join_fragments()</code> — detect cross-page list continuations<br />
+- <code>resolve_ambiguous_reference()</code> — resolve informal references like "the above table"</p>
+<p>These are not wired into the main pipeline by default but can be called from <code>enhance_document()</code>.</p>
+<h3 id="supporting-other-languages">Supporting Other Languages</h3>
+<p>To support non-English building codes:<br />
+1. Update all regex patterns in <code>structure_parser.py</code> and <code>reference_linker.py</code><br />
+2. Update the reference kind matching in <code>_ref_to_id()</code> (<code>"sentence"</code>, <code>"article"</code>, etc.)<br />
+3. Update <code>RE_NOTE</code> and <code>RE_A_TITLE</code> if the appendix note format differs</p>
+<hr />
+<p><em>Last updated: 2026-03-18</em></p>
+  </main>
+
+</div>
+</body>
+</html>

@@ -191,7 +191,10 @@ def strip_html(html: str) -> str:
     """Remove HTML tags, decode entities, normalise whitespace."""
     if not html:
         return ""
-    text = re.sub(r'<[^>]+>', ' ', html)
+    # Match only real HTML tags: <tagname ...> or </tagname>.
+    # Tag names must start with a letter so comparison operators like
+    # "< 1.0" or "<= H" are not mistaken for HTML tags.
+    text = re.sub(r'<\s*/?\s*[A-Za-z][^>]*>', ' ', html)
     text = (text
             .replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
             .replace('&nbsp;', ' ').replace('&#39;', "'").replace('&quot;', '"'))
@@ -209,8 +212,10 @@ def _strip_html_keep_text(html: str) -> str:
     """
     Strip all HTML tags except <math> markers, decode entities.
     Used when splitting inline-math blocks so non-math text is preserved.
+    Tag names must start with a letter to avoid eating comparison operators
+    like "< 1.0" or "<= H".
     """
-    text = re.sub(r'<(?!/?math)[^>]+>', ' ', html)
+    text = re.sub(r'<\s*/?\s*(?!math)[A-Za-z][^>]*>', ' ', html)
     text = (text
             .replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
             .replace('&nbsp;', ' ').replace('&#39;', "'").replace('&quot;', '"'))
@@ -258,8 +263,10 @@ def inline_math_to_markdown(html: str) -> str:
         html,
         flags=re.DOTALL | re.IGNORECASE
     )
-    # Strip all remaining HTML tags
-    result = re.sub(r'<(?!/?math)[^>]+>', ' ', result)
+    # Strip all remaining HTML tags.  Require the tag name to start with a
+    # letter so that comparison operators like "< 1.0" or "<= H" are NOT
+    # treated as HTML tags and eaten — they are plain text that must survive.
+    result = re.sub(r'<\s*/?\s*[A-Za-z][^>]*>', ' ', result)
     result = (result
               .replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
               .replace('&nbsp;', ' ').replace('&#39;', "'").replace('&quot;', '"'))
@@ -499,18 +506,24 @@ def parse_table_html(html: str):
                                 continue
                             if parts and parts[-1] == lbl:
                                 continue  # rowspan duplicate
-                            if row_i in spanning_rows and col > 0:
-                                # Spanning subheader: add to col 0 only for context,
-                                # skip for all other data columns
-                                continue
+                            # Spanning subheader rows (e.g. "Building Surfaces" above
+                            # "1E / 2 / 2E / ...") should be included in ALL the columns
+                            # they span — not just col 0.  The old `col > 0` guard was
+                            # removing them from every data column, leaving those columns
+                            # with no intermediate-level label.
+                            # Col 0 is unaffected: its label at a spanning row comes from
+                            # the rowspan-carry of the leading column (e.g. "Load Case"),
+                            # which is caught by the rowspan-duplicate check below.
+
                             # FIX: Datalab sometimes underreports rowspan (e.g. rowspan=2
-                            # when the PDF has 3 header rows), causing column-identifier
-                            # sub-labels like "1", "1E" to land in columns that already
-                            # have a long descriptive header (e.g. "Load Case").
-                            # Detect: final row, short column-id label (≤4 chars, looks
-                            # like a number/identifier), column already has a longer label.
-                            # In that case skip — the sub-label belongs to a later column.
-                            if (row_i == n_rows - 1 and parts
+                            # when the PDF has 3 header rows), causing a column-identifier
+                            # sub-label like "1E" to land in col 0 (the leading column,
+                            # e.g. "Load Case") instead of the correct data column.
+                            # Guard: only apply this skip for col 0, where misplacement
+                            # can occur.  Data columns (col > 0) always keep their
+                            # final-row labels ("1E", "2E", "ULS", "SLS", etc.).
+                            if (col == 0
+                                    and row_i == n_rows - 1 and parts
                                     and len(lbl) <= 4
                                     and re.match(r'^[0-9A-Z]+$', lbl)
                                     and len(parts[-1]) > len(lbl) + 2):

@@ -119,7 +119,7 @@ Document
 | `inline_math_to_markdown(html)` | Converts `<math>` tags to `$...$` inline notation; strips remaining HTML → single markdown string |
 | `extract_math(html)` | Returns **list** of LaTeX strings (one per `<math>` tag) — each becomes a separate Equation ContentItem |
 | `listgroup_to_lines(html)` | Preserves `<math>` as `$...$`, strips other HTML, converts `</li>` to newlines |
-| `parse_table_html(html)` | Parses HTML tables with multi-row `<thead>` colspan/rowspan, `<tbody>` rowspan carry, and bbox-based empty-cell carry |
+| `parse_table_html(html)` | Parses HTML tables with multi-row `<thead>` colspan/rowspan, `<tbody>` rowspan carry, bbox-based empty-cell carry, final-row sub-label skip, and spanning-rows last-row exception |
 | `strip_html(html)` | Removes tags, decodes entities, normalizes whitespace |
 | `_strip_html_keep_text(html)` | Strips all HTML **except** `<math>` markers; used when splitting inline-math blocks |
 | `split_inline_math(html)` | Legacy compatibility shim — calls `inline_math_to_markdown()` and returns `[{type:"text", value:...}]` |
@@ -189,6 +189,10 @@ If `has_inline_math`, runs `inline_math_to_markdown()` on raw HTML first; then s
 - `_remove_empty_clauses()` — drops clauses with no content, figures, tables, or equations
 - `_merge_continued_tables()` — merges cross-page `(continued)` table fragments into base table; applies cross-page rowspan carry (sandwich detection for 2-col use/load tables)
 
+**`parse_table_html()` — special header collapse rules:**
+- **Final-row sub-label skip**: In the column-name collapse loop, when `row_i == n_rows - 1` AND the label is ≤4 chars AND matches `^[0-9A-Z]+$` AND the column already has a longer label, the label is skipped. Handles Datalab underreporting rowspan (e.g. Table 4.1.7.6).
+- **Spanning-rows last-row exception**: The spanning subheader detection skips `row_i == n_rows - 1`. The last header row is never treated as a spanning subheader — it is the primary data descriptor and must appear in all columns (e.g. "Value of C_b" in Table 4.1.6.2.-B).
+
 ### Regex Patterns
 ```python
 RE_PART      = r'^Part\s*(\d+)\s*(.*)'         # re.IGNORECASE
@@ -221,6 +225,7 @@ Creates a `StructureParser`, calls `parse()`, then `to_dict()` → returns JSON-
 - **Two-pass note index:** indexes both CL-AUTO clause titles AND embedded text items starting with `A-`
 - Fallback: strip sentence sub-number and retry (e.g. `A-4.1.3.2.(2)` → `A-4.1.3.2`)
 - `resolved: false` for external appendix notes (different PDF)
+- **`RE_NOTE` and `RE_A_TITLE` patterns** use `\d+(?:\.\d+)*` (not `[\d\.]+`) so that sub-note identifiers like `A-4.1.6.16.(6)` are captured correctly. The old `[\d\.]+` greedily consumed the trailing dot, preventing `(?:\.\(\d+\))?` from matching the `(6)` suffix.
 
 **Key functions:**
 | Function | Purpose |
@@ -317,14 +322,20 @@ Run: `streamlit run viewer_streamlit.py` → opens at http://localhost:8501
 
 ### Table Rendering (`_html_table()`)
 Tables are rendered as self-contained HTML (not `st.dataframe()`) to support math:
-- `_wrap_cell_math()`: wraps LaTeX expressions in cells with `$...$`
+- `_split_math_segments(s)`: splits a string into `(segment, is_math)` tuples based on `$...$` delimiters. Used by `_wrap_cell_math()` and `_value_with_inline_math()` to avoid double-wrapping already-delimited math regions.
+- `_wrap_cell_math()`: wraps LaTeX expressions in cells with `$...$`. Uses `_split_math_segments` — only processes plain-text segments, leaves existing `$...$` regions untouched. (Previously applied COMBINED_RE to the whole string including existing `$...$` regions, breaking them.)
 - `_build_tbody_with_rowspan()`: applies visual `rowspan` to consecutive identical values in cols 0–1
 - `_esc_html_math()`: HTML-escapes text while preserving `$...$` regions intact
-- Height estimated from content; rendered via `st.components.v1.html()`
+- `_value_with_inline_math()`: uses `_split_math_segments` — the inner `_wrap_raw_text()` function is applied only to non-math segments. (Previously applied COMBINED_RE to the whole string, breaking existing `$...$` regions.)
+- Height estimated dynamically: `header_h` computed from `max_h_len // approx_col_width_chars * 24 + 30` (varies with column count and header text length); `est_height = header_h + rows * row_h + 40 + 16`. (Previously used a fixed 90px header height.)
+- Rendered via `st.components.v1.html()` with `scrolling=True`. (Previously `scrolling=False`.)
 
 ### Reference Rendering
 - **Standard refs:** resolved → clickable button (max 4 per row) → `navigate_to()` + `st.rerun()`; unresolved → grey badge
-- **Note refs:** resolved → green button(s); multiple target_ids → one button per target; unresolved → amber badge
+- **Note refs:** resolved → green button(s); multiple target_ids → one button per target; unresolved → amber badge. Button label always uses `note_ref` directly — the previous title-extraction override (which read the CL-AUTO clause's title to derive an A- identifier) was removed because it produced wrong labels when multiple note refs resolved to the same CL-AUTO clause (e.g. `A-4.1.6.16` content embedded in CL-AUTO-49 whose title is `A-4.1.6.9`).
+
+### Inline Note Pattern Fixes (`viewer_streamlit.py`)
+All three inline note regex patterns (lines ~349, ~375, ~395) use `\d+(?:\.\d+)*` instead of `[\d\.]+` to correctly capture sub-note identifiers like `A-4.1.6.16.(6)`. The old `[\d\.]+` greedily consumed the trailing dot and prevented the sub-number suffix from being matched.
 
 ### Navigation via Query Params
 `?clause=CL-...` deep-links to a clause; figures/tables navigate to parent clause via `_parent_clause_id`. `navigate_to(id)` sets `st.query_params["clause"]`.
@@ -369,6 +380,11 @@ Periods in numbers are replaced with hyphens in IDs: `4.1.6.5` → `CL-4-1-6-5`.
 - **Storage is file-based** — `document_store.py` noted as swap candidate for PostgreSQL/SQLite
 - **Reference normalization**: dots/hyphens stripped for fuzzy caption matching (handles PDF typos)
 - **Note index two-pass**: indexes appendix clause titles AND embedded text items starting with `A-`
+- **Note ref regex**: `RE_NOTE` and `RE_A_TITLE` use `\d+(?:\.\d+)*` (not `[\d\.]+`) so sub-note identifiers such as `A-4.1.6.16.(6)` are captured fully; fix improved note resolution from 73/77 (94.8%) to 128/133 (96.2%)
+- **Inline note viewer regex**: same `\d+(?:\.\d+)*` fix applied to all three inline note patterns in `viewer_streamlit.py`
+- **Table cell math safety**: `_wrap_cell_math()` and `_value_with_inline_math()` use `_split_math_segments()` to avoid double-wrapping existing `$...$` regions
+- **Table scrolling**: tables rendered with `scrolling=True` in `st.components.v1.html()`
+- **Table height estimation**: header height computed dynamically from column count and text length instead of a fixed 90px constant
 - **Deduplication**: reference linker tracks `(kind, ref)` tuples per clause; note linker tracks `note_ref` per clause
 - **`note_refs[]` is dynamic**: not part of the `Clause` dataclass — added to the dict by `reference_linker.link_references()`
 

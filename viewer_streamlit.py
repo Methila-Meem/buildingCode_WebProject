@@ -410,9 +410,8 @@ def _render_inline_note_button(raw: str, note_ref: str, clause: dict):
     Render a single (See Note A-...) as a styled button or badge.
     Looks up the note in clause.note_refs[] to get resolution status.
 
-    Key uses clause_id + note_ref (stable across rerenders) instead of
-    id(raw) (memory address that changes every run and is not unique when
-    the same note_ref appears in multiple clauses rendered simultaneously).
+    Key uses clause_id + note_ref + occurrence index to stay unique even
+    when the same note_ref appears multiple times within the same clause.
     """
     clause_id = clause.get("id", "unknown")
     note_refs = clause.get("note_refs", [])
@@ -427,9 +426,17 @@ def _render_inline_note_button(raw: str, note_ref: str, clause: dict):
         target = target_ids[0]
         # Sanitise note_ref for use in key: remove spaces and special chars
         safe_ref = note_ref.replace(" ", "_").replace(".", "_").replace("(", "").replace(")", "")
+        base_key = f"inline_note_{clause_id}_{safe_ref}"
+        # Track per-key occurrence count so duplicate note_refs in the same
+        # clause each get a unique suffix (e.g. _0, _1, …)
+        if "_inline_note_counts" not in st.session_state:
+            st.session_state["_inline_note_counts"] = {}
+        count = st.session_state["_inline_note_counts"].get(base_key, 0)
+        st.session_state["_inline_note_counts"][base_key] = count + 1
+        unique_key = f"{base_key}_{count}"
         if st.button(
             f"📝 {note_ref}",
-            key=f"inline_note_{clause_id}_{safe_ref}",
+            key=unique_key,
             help=f"Open appendix note → {target}",
         ):
             navigate_to(target)
@@ -525,6 +532,13 @@ def _split_math_segments(s: str):
     Split a string into alternating (text, is_inside_math) segments based on
     $...$ delimiters.  Single-dollar delimiters only (KaTeX inline math).
 
+    Follows standard Markdown/KaTeX delimiter rules to avoid false positives
+    on malformed stored values (e.g. comparison operators eaten by the HTML
+    stripper producing "$H/D $C_p = -1.0$ for $x..." where "$ for $" would
+    otherwise be misidentified as a math block):
+      - Opening $: must NOT be immediately followed by whitespace.
+      - Closing $: must NOT be immediately preceded by whitespace.
+
     Returns list of (segment_str, is_math) tuples.
     Already-delimited regions are left exactly as-is so downstream code
     never double-wraps them.
@@ -538,10 +552,30 @@ def _split_math_segments(s: str):
             if i < len(s):
                 parts.append((s[i:], False))
             break
+
+        # Check valid opening: character after $ must not be whitespace
+        next_ch = s[dollar + 1] if dollar + 1 < len(s) else ''
+        if next_ch in (' ', '\t', '\n', '\r') or next_ch == '':
+            # Not a valid math opener — treat this $ as plain text
+            parts.append((s[i:dollar + 1], False))
+            i = dollar + 1
+            continue
+
         if dollar > i:
             parts.append((s[i:dollar], False))
-        # Find closing $
-        close = s.find('$', dollar + 1)
+
+        # Find closing $ — must not be preceded by whitespace
+        j = dollar + 1
+        close = -1
+        while j < len(s):
+            cand = s.find('$', j)
+            if cand == -1:
+                break
+            if s[cand - 1] not in (' ', '\t', '\n', '\r'):
+                close = cand
+                break
+            j = cand + 1
+
         if close == -1:
             # Unclosed — treat remainder as plain text
             parts.append((s[dollar:], False))
@@ -665,6 +699,33 @@ def _wrap_cell_math(cell: str) -> str:
     return ''.join(out)
 
 
+def _render_cell_content(cell: str) -> str:
+    """
+    Render a table cell value as HTML, handling inline bullet characters (•).
+
+    Cells from the parser that contain bullet-point lists store them as
+    inline '•' characters, e.g.:
+      "Ground profile contains • item one , • item two , • item three"
+
+    This function splits on '•', wraps each segment with math-aware
+    formatting, and joins them with '<br>' so each bullet appears on its
+    own line — matching the PDF layout.
+    """
+    if '\u2022' not in cell:           # no bullet character → fast path
+        return _wrap_cell_math(_esc_html_math(cell))
+
+    parts = cell.split('\u2022')
+    intro = parts[0].rstrip(' ,')
+    bullets = [p.strip().rstrip(' ,') for p in parts[1:] if p.strip()]
+
+    lines = []
+    if intro:
+        lines.append(_wrap_cell_math(_esc_html_math(intro)))
+    for b in bullets:
+        lines.append('&#x2022;&nbsp;' + _wrap_cell_math(_esc_html_math(b)))
+    return '<br>'.join(lines)
+
+
 def _build_tbody_with_rowspan(rows: list, n_cols: int) -> str:
     """
     Build <tbody> HTML applying visual rowspan to consecutive identical values
@@ -699,7 +760,7 @@ def _build_tbody_with_rowspan(rows: list, n_cols: int) -> str:
         padded = list(row) + [''] * max(0, n_cols - len(row))
         cells = []
         for ci, cell in enumerate(padded[:n_cols]):
-            content = _wrap_cell_math(_esc_html_math(cell))
+            content = _render_cell_content(cell)
             if ci < len(span_map):
                 sv = span_map[ci].get(ri, 1)
                 if sv == 0:
@@ -716,6 +777,96 @@ def _build_tbody_with_rowspan(rows: list, n_cols: int) -> str:
     return f'<tbody>{"".join(html_rows)}</tbody>'
 
 
+def _build_hierarchical_thead(headers: list) -> tuple:
+    """
+    Build a multi-row <thead> when header strings use ' / ' as a hierarchy
+    separator produced by the parser (e.g.
+    'Factors / Arch and Curved Roofs / $C_a$ Downwind Side').
+
+    Algorithm:
+    - Split each header by ' / ' → parts list per column.
+    - max_depth = deepest column (number of levels).
+    - For each level row:
+        - Columns whose last part was already emitted at an earlier level are
+          skipped (their cell carries a rowspan).
+        - Leaf columns (current level == last level for that column) get
+          rowspan = max_depth - level so they fill all remaining header rows.
+        - Intermediate columns get colspan if consecutive columns share the
+          same path prefix at this level.
+
+    Returns (thead_html_str, num_header_rows).
+    """
+    if not headers:
+        return '<thead><tr></tr></thead>', 1
+
+    parts = [h.split(' / ') for h in headers]
+    max_depth = max(len(p) for p in parts)
+    n_cols = len(headers)
+
+    if max_depth == 1:
+        # No hierarchy — original single-row behaviour
+        th_cells = ''.join(
+            f'<th>{_wrap_cell_math(_esc_html_math(h))}</th>' for h in headers
+        )
+        return f'<thead><tr>{th_cells}</tr></thead>', 1
+
+    rows_html = []
+    for level in range(max_depth):
+        cells = []
+        col = 0
+        while col < n_cols:
+            p = parts[col]
+            emit_level = len(p) - 1  # index of last part for this column
+
+            # Already covered by a rowspan from an earlier level → skip
+            if level > emit_level:
+                col += 1
+                continue
+
+            label = p[level]
+            is_leaf = (level == emit_level)
+
+            # rowspan: leaf fills all remaining header rows
+            rowspan = (max_depth - level) if is_leaf else 1
+
+            # colspan: merge consecutive columns sharing the same path prefix
+            # at this level — only for intermediate (non-leaf) cells
+            colspan = 1
+            if not is_leaf:
+                j = col + 1
+                while j < n_cols:
+                    pj = parts[j]
+                    if (len(pj) > level
+                            and pj[:level + 1] == p[:level + 1]
+                            and len(pj) - 1 > level):
+                        colspan += 1
+                        j += 1
+                    else:
+                        break
+                col = j
+            else:
+                col += 1
+
+            content = _wrap_cell_math(_esc_html_math(label))
+            style_parts = []
+            if colspan > 1:
+                style_parts.append('text-align:center')
+            if rowspan > 1:
+                style_parts.append('vertical-align:middle')
+            attrs = ''
+            if colspan > 1:
+                attrs += f' colspan="{colspan}"'
+            if rowspan > 1:
+                attrs += f' rowspan="{rowspan}"'
+            if style_parts:
+                attrs += f' style="{"; ".join(style_parts)}"'
+            cells.append(f'<th{attrs}>{content}</th>')
+
+        rows_html.append(f'<tr>{"".join(cells)}</tr>')
+
+    return f'<thead>{"".join(rows_html)}</thead>', max_depth
+
+
 def _html_table(caption: str, headers: list, rows: list) -> str:
     """
     Build a self-contained HTML document for a table with KaTeX math rendering.
@@ -725,12 +876,13 @@ def _html_table(caption: str, headers: list, rows: list) -> str:
       so KaTeX renders them as proper math symbols.
     - _build_tbody_with_rowspan() merges consecutive identical cells in the
       first two columns visually (like PDF rowspan), eliminating repeated text.
+    - _build_hierarchical_thead() renders multi-level headers (stored as
+      'Level1 / Level2 / Leaf') as stacked <thead> rows with colspan/rowspan
+      instead of flattening them with a '/' separator.
     - Height estimate accounts for cell content length to avoid iframe clipping.
     """
     n_cols = len(headers)
-    th_cells = ''.join(
-        f'<th>{_wrap_cell_math(_esc_html_math(h))}</th>' for h in headers
-    )
+    thead_html, n_header_rows = _build_hierarchical_thead(headers)
     caption_html = (
         f'<div class="tbl-caption">{_wrap_cell_math(_esc_html_math(caption))}</div>'
         if caption else ''
@@ -738,13 +890,17 @@ def _html_table(caption: str, headers: list, rows: list) -> str:
     tbody = _build_tbody_with_rowspan(rows, n_cols)
 
     # Estimate iframe height from content.
-    # Header height depends on number of columns and longest header text:
-    # more columns → narrower cells → more text wrapping → taller header.
-    max_h_len = max((len(h) for h in headers), default=20) if headers else 20
+    # For hierarchical headers use the longest individual level label (not the
+    # full ' / '-joined string) so wrapping is estimated per header row.
+    if n_header_rows > 1:
+        all_labels = [part for h in headers for part in h.split(' / ')]
+        max_h_len = max((len(p) for p in all_labels), default=20)
+    else:
+        max_h_len = max((len(h) for h in headers), default=20) if headers else 20
     # Approximate chars per line given available width and column count
     approx_col_width_chars = max(8, 80 // max(1, n_cols))
     header_lines = max(1, max_h_len // approx_col_width_chars)
-    header_h = max(50, header_lines * 24 + 30)
+    header_h = max(50, header_lines * 24 + 30) * n_header_rows
 
     max_len = max((len(str(c)) for row in rows for c in row if c), default=10)
     row_h = 56 if max_len > 80 else 40 if max_len > 30 else 30
@@ -791,11 +947,12 @@ th {{
     padding: 8px 12px;
     text-align: left;
     font-weight: 600;
-    border-bottom: 2px solid #444;
+    border-bottom: 1px solid #555;
     border-right: 1px solid #444;
     color: #c8d0e0;
     font-size: 13px;
 }}
+thead tr:last-child th {{ border-bottom: 2px solid #444; }}
 th:last-child {{ border-right: none; }}
 td {{
     padding: 6px 12px;
@@ -813,7 +970,7 @@ tr:nth-child(even) td {{ background: rgba(255,255,255,0.03); }}
 <body>
 {caption_html}
 <table>
-<thead><tr>{th_cells}</tr></thead>
+{thead_html}
 {tbody}
 </table>
 </body>
@@ -1188,6 +1345,10 @@ def render_clause(clause: dict, flags: dict, show_flag_ui: bool = True,
 # ─────────────────────────────────────────────────────────────────────────────
 
 def main():
+    # Reset per-run inline note button key counters to avoid duplicate-key errors
+    # when the same note_ref appears multiple times in a single render pass.
+    st.session_state["_inline_note_counts"] = {}
+
     doc   = load_document()
     flags = load_flags()
 

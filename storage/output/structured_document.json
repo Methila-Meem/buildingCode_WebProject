@@ -2,7 +2,7 @@
   "title": "Part 4Structural Design",
   "source_pdf": "bcbc_2024_Part4-509-654.pdf",
   "total_pages": 146,
-  "extracted_at": "2026-03-17T20:32:05.491884Z",
+  "extracted_at": "2026-03-18T07:42:42.746125Z",
   "chapters": [
     {
       "id": "CH-4",
@@ -5057,8 +5057,8 @@
                   "caption": "Table 4.1.6.2.-A Importance Factor for Snow Load, $I_s$ Forming Part of Sentence 4.1.6.2.(1)",
                   "headers": [
                     "Importance Category",
-                    "Importance Factor, $I_s$",
-                    "Importance Factor, $I_s$ (2)"
+                    "Importance Factor, $I_s$ / ULS",
+                    "Importance Factor, $I_s$ / SLS"
                   ],
                   "rows": [
                     [
@@ -9330,8 +9330,8 @@
                   "caption": "Table 4.1.7.3. Importance Factor for Wind Load, $I_w$ Forming Part of Sentences 4.1.7.3.(1) and 4.1.7.8.(4)",
                   "headers": [
                     "Importance Category",
-                    "Importance Factor, $I_w$",
-                    "Importance Factor, $I_w$ (2)"
+                    "Importance Factor, $I_w$ / ULS",
+                    "Importance Factor, $I_w$ / SLS"
                   ],
                   "rows": [
                     [
@@ -9880,7 +9880,7 @@
                 },
                 {
                   "type": "sub_clause",
-                  "value": "for $H/D $C_p = -1.0$ for $x \\leq H$, and $= -0.5$ for $x > H$.",
+                  "value": "for $H/D < 1.0$, $C_p = -1.0$ for $x \\leq H$, and $= -0.5$ for $x > H$.",
                   "latex": "",
                   "figure_id": "",
                   "image_key": "",
@@ -10333,19 +10333,19 @@
                   "caption": "Table 4.1.7.6. External Peak Values of $C_g C_p$ in Figure 4.1.7.6.-A Forming Part of Sentence 4.1.7.6.(2)",
                   "headers": [
                     "Load Case",
-                    "Roof Slope",
-                    "External Peak Values of $C_g C_p$ (1) (2)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (2)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (3)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (4)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (5)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (6)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (7)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (8)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (9)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (10)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (11)",
-                    "External Peak Values of $C_g C_p$ (1) (2) (12)"
+                    "Roof Slope / 1E",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 2",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 2E",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 3",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 3E",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 4",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 4E",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 5",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 5E",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 6",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces / 6E",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces",
+                    "External Peak Values of $C_g C_p$ (1) (2) / Building Surfaces (2)"
                   ],
                   "rows": [
                     [
@@ -15395,7 +15395,7 @@
                   "caption": "Table 4.1.8.5.-A Importance Factor for Earthquake Loads and Effects, $I_E$ Forming Part of Sentence 4.1.8.5.(1)",
                   "headers": [
                     "Importance Category",
-                    "Importance Factor, $I_E$",
+                    "Importance Factor, $I_E$ / ULS",
                     "Importance Factor, $I_E$ / SLS (1)"
                   ],
                   "rows": [
@@ -16151,10 +16151,10 @@
                     "Type of SFRS",
                     "$R_d$",
                     "$R_o$",
-                    "Restrictions (2)",
-                    "Restrictions (2) (2)",
-                    "Restrictions (2) (3)",
-                    "Restrictions (2) (4)"
+                    "Restrictions (2) / Seismic Category / SC1",
+                    "Restrictions (2) / Seismic Category / SC2",
+                    "Restrictions (2) / Seismic Category / SC3",
+                    "Restrictions (2) / Seismic Category / SC4"
                   ],
                   "rows": [
                     [
