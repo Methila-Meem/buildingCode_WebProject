@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: building-code-viewer
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false   # Set manually in Render dashboard
+
+  - type: web
+    name: building-code-api
+    env: docker
+    dockerfilePath: ./Dockerfile.api
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false   # Required only if using --ai pipeline flag

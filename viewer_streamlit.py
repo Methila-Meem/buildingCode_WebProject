@@ -84,7 +84,7 @@ def build_id_index(doc: dict) -> dict:
     Build a flat {id -> node} lookup for all navigable nodes.
 
     Includes:
-      - Chapters  (CH-)
+      - Parts     (CH-)
       - Sections  (SEC-)
       - Clauses   (CL-)
       - Figures   (FIG-)  -> stored with _parent_clause_id for navigation
@@ -164,9 +164,12 @@ def get_target_clause_id() -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-.block-container { padding-top: 1rem; padding-bottom: 1rem; }
+/* ── Global ──────────────────────────────────────────────────────── */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+.block-container { padding-top: 0.25rem !important; padding-bottom: 2rem; }
 
-/* Math table styles — used by _html_table() via st.components.v1.html() */
+/* ── Math table (inside st.components.v1.html iframes) ───────────── */
 .math-table-wrap {
     overflow-x: auto;
     margin: 8px 0 16px 0;
@@ -198,12 +201,9 @@ st.markdown("""
 .math-table td:last-child { border-right: none; }
 .math-table tr:last-child td { border-bottom: none; }
 .math-table tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
-.math-table-caption {
-    font-weight: 700;
-    margin-bottom: 6px;
-    font-size: 0.95rem;
-}
+.math-table-caption { font-weight: 700; margin-bottom: 6px; font-size: 0.95rem; }
 
+/* ── Legacy clause-header (kept for compatibility) ───────────────── */
 .clause-header {
     background: #f0f4ff;
     border-left: 4px solid #3b5bdb;
@@ -214,6 +214,7 @@ st.markdown("""
 .clause-id    { font-family: monospace; color: #3b5bdb; font-size: 0.85rem; }
 .clause-title { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; margin: 2px 0 0 0; }
 
+/* ── Where block ─────────────────────────────────────────────────── */
 .where-block {
     background: #f8f9fa;
     border-left: 3px solid #adb5bd;
@@ -223,15 +224,15 @@ st.markdown("""
     color: #495057;
 }
 
-.subclause-row {
-    display: flex; gap: 12px; padding: 4px 0;
-    font-size: 0.92rem;
-}
+/* ── Sub-clause ──────────────────────────────────────────────────── */
+.subclause-row { display: flex; gap: 12px; padding: 4px 0; font-size: 0.92rem; }
 .sc-marker {
     font-family: monospace; font-weight: 700;
     color: #3b5bdb; min-width: 36px; padding-top: 2px;
+    white-space: nowrap;
 }
 
+/* ── Figure ──────────────────────────────────────────────────────── */
 .figure-container {
     border: 1px solid #dee2e6;
     border-radius: 8px;
@@ -240,37 +241,30 @@ st.markdown("""
     background: #f8f9fa;
 }
 .figure-caption {
-    text-align: center;
-    font-weight: 600;
-    color: #495057;
-    font-size: 0.9rem;
-    margin-top: 8px;
+    text-align: center; font-weight: 600;
+    color: #495057; font-size: 0.9rem; margin-top: 8px;
 }
 .figure-alttext {
-    font-size: 0.78rem;
-    color: #868e96;
-    font-style: italic;
-    margin-top: 4px;
-    text-align: center;
+    font-size: 0.78rem; color: #868e96;
+    font-style: italic; margin-top: 4px; text-align: center;
 }
 
+/* ── Flag indicator ──────────────────────────────────────────────── */
 .flag-indicator {
     background: #fff3cd;
     border-left: 3px solid #f59e0b;
     padding: 6px 10px;
     border-radius: 0 4px 4px 0;
-    font-size: 0.8rem;
-    color: #78350f;
-    margin-bottom: 8px;
+    font-size: 0.8rem; color: #78350f; margin-bottom: 8px;
 }
 
+/* ── Standard cross-reference badges ────────────────────────────── */
 .ref-resolved {
     display: inline-block;
     background: #eff6ff; color: #1d4ed8;
     font-size: 0.8rem; font-family: monospace;
     padding: 1px 6px; border-radius: 3px;
-    border: 1px solid #bfdbfe; margin: 1px;
-    cursor: pointer;
+    border: 1px solid #bfdbfe; margin: 1px; cursor: pointer;
 }
 .ref-unresolved {
     display: inline-block;
@@ -279,14 +273,14 @@ st.markdown("""
     padding: 1px 6px; border-radius: 3px;
     border: 1px solid #e5e7eb; margin: 1px;
 }
-/* Note reference badges — appendix links */
+
+/* ── Appendix note badges ────────────────────────────────────────── */
 .note-resolved {
     display: inline-block;
     background: #f0fdf4; color: #166534;
     font-size: 0.8rem; font-family: monospace;
     padding: 1px 6px; border-radius: 3px;
-    border: 1px solid #bbf7d0; margin: 1px;
-    cursor: pointer;
+    border: 1px solid #bbf7d0; margin: 1px; cursor: pointer;
 }
 .note-external {
     display: inline-block;
@@ -294,8 +288,97 @@ st.markdown("""
     font-size: 0.8rem; font-family: monospace;
     padding: 1px 6px; border-radius: 3px;
     border: 1px solid #fde68a; margin: 1px;
-    cursor: default;
-    font-style: italic;
+    cursor: default; font-style: italic;
+}
+
+/* ── Hierarchy label badges ──────────────────────────────────────── */
+.hierarchy-badge {
+    display: inline-block;
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 2px 9px;
+    border-radius: 10px; margin-bottom: 5px;
+}
+.hbadge-section    { background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; }
+.hbadge-subsection { background:#ede9fe; color:#5b21b6; border:1px solid #ddd6fe; }
+.hbadge-article    { background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; }
+.hbadge-sentence   { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+.hbadge-default    { background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }
+
+/* ── Clause heading block ────────────────────────────────────────── */
+.clause-heading-block { padding: 4px 0 6px 0; }
+.clause-num-title { font-size: 1.02rem; font-weight: 700; color: #1a1a2e; line-height: 1.4; }
+.clause-id-tag { font-family: monospace; color: #9ca3af; font-size: 0.72rem; margin-bottom: 2px; }
+
+/* ── Note pill buttons (blue rounded pills beside clause heading) ── */
+/* Targets Streamlit buttons in the narrow pill columns (non-first column) */
+div[data-testid="stHorizontalBlock"] div[data-testid="column"]:not(:first-child) button {
+    background-color: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+    border-radius: 20px !important;
+    padding: 3px 10px !important;
+    font-size: 0.73rem !important;
+    font-weight: 500 !important;
+    min-height: 28px !important;
+    line-height: 1.3 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+div[data-testid="stHorizontalBlock"] div[data-testid="column"]:not(:first-child) button:hover {
+    background-color: #dbeafe !important;
+    border-color: #93c5fd !important;
+}
+
+/* ── Document top header bar ─────────────────────────────────────── */
+.doc-top-bar {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d4e7e 100%);
+    padding: 14px 20px;
+    margin: -0.5rem -1rem 1.5rem -1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+}
+.doc-title { font-weight: 800; font-size: 1.05rem; color: #ffffff; letter-spacing: -0.01em; }
+.doc-subtitle { font-size: 0.76rem; color: #93c5fd; margin-top: 3px; }
+.doc-nav-hint { font-size: 0.72rem; color: #a5b4fc; font-style: italic; }
+
+/* ── Part card ────────────────────────────────────────────────────── */
+.part-card {
+    background: linear-gradient(135deg, #f0f4ff 0%, #eaefff 100%);
+    border: 1px solid #c7d2fe;
+    border-left: 6px solid #3b5bdb;
+    border-radius: 6px;
+    padding: 14px 20px;
+    margin: 28px 0 16px 0;
+    box-shadow: 0 1px 4px rgba(59,91,219,0.08);
+}
+.part-card-badge {
+    font-size: 0.67rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: #4f46e5; margin-bottom: 5px;
+}
+.part-card-title { font-size: 1.3rem; font-weight: 800; color: #1e3a5f; line-height: 1.3; }
+
+/* ── Section header ──────────────────────────────────────────────── */
+.section-header {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e3a5f;
+    padding: 9px 14px;
+    margin: 20px 0 12px 0;
+    background: #f8faff;
+    border: 1px solid #e0e7ff;
+    border-left: 4px solid #3b5bdb;
+    border-radius: 0 6px 6px 0;
+    line-height: 1.4;
+}
+.sec-badge {
+    display: inline-block;
+    font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #4f46e5;
+    margin-right: 6px; vertical-align: middle;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -304,6 +387,37 @@ st.markdown("""
 # ─────────────────────────────────────────────────────────────────────────────
 # Content item renderers
 # ─────────────────────────────────────────────────────────────────────────────
+
+def _recover_vardef_subscripts(text: str) -> str:
+    """
+    Recover subscript notation lost when the parser stripped <sub> tags.
+
+    Patterns like "C w applicable" or "where w s and l s are" arise when the
+    source HTML had "C<sub>w</sub> applicable" and strip_html converted the
+    <sub> tag to a space.  This function converts isolated single-letter
+    variables followed by a short subscript (e.g. "C w", "w s", "l s") back
+    to inline-math "$C_w$", "$w_s$", "$l_s$" for Streamlit KaTeX rendering.
+
+    Safety guards:
+      - (?<!\\w)  — the variable letter must NOT be preceded by another word
+                    char (prevents matching letters in the middle of words).
+      - (?!\\w)   — the subscript string must NOT be followed by another word
+                    char (prevents consuming the start of a longer word like
+                    "shorter" from "shorter").
+      - Only applied outside existing $...$ regions via _split_math_segments.
+    """
+    import re as _re
+    if not text:
+        return text
+    _SUB_RE = _re.compile(r'(?<!\w)([A-Za-z])\s([a-z]{1,5})(?!\w)')
+    out = []
+    for segment, is_math in _split_math_segments(text):
+        if is_math:
+            out.append(segment)
+        else:
+            out.append(_SUB_RE.sub(lambda m: f'${m.group(1)}_{{{m.group(2)}}}$', segment))
+    return ''.join(out)
+
 
 def render_text_item(value: str, clause: dict = None):
     """
@@ -341,6 +455,15 @@ def render_text_item(value: str, clause: dict = None):
     # New (from inline math): "$I_s$ = ..." or "$C_b$ = ..."  (dollar notation)
     stripped = value.strip()
 
+    # Pre-process space-subscript variable definition symbols:
+    # "C ws = ..." → "C_{ws} = ..." so var_def can detect and render them.
+    # Handles cases where the parser stripped <sub> tags to spaces, e.g.
+    # C_ws → "C ws", l_cs → "l cs", w_s → "w s".
+    _SPACE_SUB_DEF_RE = _re.compile(r'^([A-Za-z])\s([a-z0-9]{1,5})\s*=\s*', _re.DOTALL)
+    _ssub = _SPACE_SUB_DEF_RE.match(stripped)
+    if _ssub:
+        stripped = f'{_ssub.group(1)}_{{{_ssub.group(2)}}} = {stripped[_ssub.end():]}'
+
     # Pattern 1: starts with $symbol$ = ...
     dollar_def = _re.match(r'^(\$[^$]+\$)\s*=\s*(.+)', stripped)
     if dollar_def:
@@ -357,10 +480,10 @@ def render_text_item(value: str, clause: dict = None):
             if note_match and clause:
                 before = rest[:note_match.start()].strip()
                 if before:
-                    st.markdown(f"= {before}")
+                    st.markdown(f"= {_recover_vardef_subscripts(before)}")
                 _render_inline_note_button(note_match.group(0), note_match.group(1), clause)
             else:
-                st.markdown(f"= {rest}")
+                st.markdown(f"= {_recover_vardef_subscripts(rest)}")
         return
 
     # Pattern 2: starts with raw LaTeX symbol = ... (legacy sub-clause values)
@@ -385,10 +508,10 @@ def render_text_item(value: str, clause: dict = None):
             if note_match and clause:
                 before = rest[:note_match.start()].strip()
                 if before:
-                    st.markdown(f"= {before}")
+                    st.markdown(f"= {_recover_vardef_subscripts(before)}")
                 _render_inline_note_button(note_match.group(0), note_match.group(1), clause)
             else:
-                st.markdown(f"= {rest}")
+                st.markdown(f"= {_recover_vardef_subscripts(rest)}")
         return
 
     # Check for inline (See Note A-...) pattern in plain text
@@ -399,6 +522,66 @@ def render_text_item(value: str, clause: dict = None):
     if RE_NOTE_INLINE.search(value) and clause is not None:
         _render_text_with_inline_notes(value, RE_NOTE_INLINE, clause)
         return
+
+    # Detect multi-character roman numeral sub-clause markers at start of text:
+    # "ii) ...", "iii) ...", "iv) ..." — the parser's RE_SUBCLAUSE only handles
+    # single-letter markers ([a-z]\)), so multi-char roman numeral + ')' items
+    # come through as plain text items and must be caught here.
+    # This MUST run before RE_EMBEDDED_SC / RE_GLUED_SC to prevent those patterns
+    # from incorrectly splitting "ii)" into "i" (prefix) + "i)" (marker).
+    RE_ROMAN_SC = _re.compile(
+        r'^([ivxlcdm]{2,})\)\s+(.+)$',
+        _re.IGNORECASE | _re.DOTALL
+    )
+    roman_m = RE_ROMAN_SC.match(stripped)
+    if roman_m:
+        render_subclause_item({
+            "marker": roman_m.group(1) + ")",
+            "value":  roman_m.group(2).strip(),
+        })
+        return
+
+    # Detect embedded sub-clause: happens when the parser merges a list-intro
+    # sentence and the first sub-clause item into one text block.
+    #
+    # Pattern 1 — colon separator (e.g. "...act simultaneously:a) 0.9 kN..."):
+    #   Greedy (.*:) captures up to the LAST colon (the list-intro colon).
+    #
+    # Pattern 2 — glued to word, no separator (e.g. "...conformance witha) CSA..."):
+    #   Marker is directly concatenated to the preceding word with no space or
+    #   punctuation — a parsing artifact.  (.*\w) ends on a word char and
+    #   ([a-z]\)) must be the very next chars.  Lowercase-only marker prevents
+    #   false positives on table-ref suffixes like "Table 4.1.2A)".
+    #   SAFETY: skip when text contains '$' math — the a) could be inside \gamma).
+    RE_EMBEDDED_SC = _re.compile(
+        r'^(.*:)\s*(\([a-z]\)|[a-z]\))\s+(.+)$',
+        _re.IGNORECASE | _re.DOTALL
+    )
+    RE_GLUED_SC = _re.compile(
+        r'^(.*\w)([a-z]\))\s+(.+)$',   # no IGNORECASE — lowercase markers only
+        _re.DOTALL
+    )
+    sc_m = RE_EMBEDDED_SC.match(stripped) or (
+        RE_GLUED_SC.match(stripped) if '$' not in stripped else None
+    )
+    if sc_m:
+        prefix_txt = sc_m.group(1).strip()
+        sc_marker  = sc_m.group(2)
+        sc_value   = sc_m.group(3).strip()
+        if prefix_txt:
+            st.markdown(prefix_txt)
+        render_subclause_item({"marker": sc_marker, "value": sc_value})
+        return
+
+    # Fix "m 2" / "m 3" → "$m^2$" / "$m^3$" (stripped HTML <sup> tags).
+    # Only matches area/volume unit patterns: m², mm², km², m³.
+    # Guard: only applied to non-math text to avoid double-wrapping.
+    if '$' not in value and '\\' not in value:
+        value = _re.sub(
+            r'\b(mm|km|m)\s+([23])\b',
+            lambda _m: f'${_m.group(1)}^{{{_m.group(2)}}}$',
+            value
+        )
 
     # Plain text / inline math text — st.markdown handles both
     # $...$ notation is rendered as inline KaTeX by Streamlit >= 1.16
@@ -526,6 +709,40 @@ def render_figure_item(item: dict):
 
     st.markdown('</div>', unsafe_allow_html=True)
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Hierarchy helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+def get_hierarchy_label(number: str) -> str:
+    """Return display label (Section/Subsection/Article/Sentence) based on number depth."""
+    if not number:
+        return ""
+    depth = len([p for p in number.split('.') if p.strip()])
+    return {1: "Part", 2: "Section", 3: "Subsection", 4: "Article", 5: "Sentence"}.get(depth, "")
+
+
+def get_hierarchy_badge_class(label: str) -> str:
+    """Return CSS class for the hierarchy badge colour."""
+    return {
+        "Section":    "hbadge-section",
+        "Subsection": "hbadge-subsection",
+        "Article":    "hbadge-article",
+        "Sentence":   "hbadge-sentence",
+    }.get(label, "hbadge-default")
+
+
+def find_parent_section(clause_id: str, chapters: list):
+    """Return (chapter_dict, section_dict) containing clause_id, or (None, None)."""
+    for ch in chapters:
+        for sec in ch.get("sections", []):
+            for cl in sec.get("clauses", []):
+                if cl["id"] == clause_id:
+                    return ch, sec
+    return None, None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 
 def _split_math_segments(s: str):
     """
@@ -699,6 +916,24 @@ def _wrap_cell_math(cell: str) -> str:
     return ''.join(out)
 
 
+def _fix_cell_subscripts(cell: str) -> str:
+    """
+    Pre-process table cell text to recover subscript notation lost when the
+    parser stripped <sub> tags to spaces.
+
+    Pattern: a single letter followed by a space and 2-5 uppercase letters
+    (e.g. "L XC" → "L_{XC}").  Only triggered for uppercase multi-letter
+    subscripts — this safely avoids footnote references like "D (2)" (paren,
+    not uppercase letter) and single-letter variables like "C b" (b is only
+    1 char — handled separately by _wrap_cell_math's COMBINED_RE).
+    """
+    import re as _re
+    # Convert "L XC" → "L_{XC}" (uppercase-only subscripts, 2-5 chars)
+    # Negative lookbehind ensures we don't double-convert "_"-prefixed tokens.
+    cell = _re.sub(r'(?<![_^{\\])([A-Za-z])\s([A-Z]{2,5})\b', r'\1_{\2}', cell)
+    return cell
+
+
 def _render_cell_content(cell: str) -> str:
     """
     Render a table cell value as HTML, handling inline bullet characters (•).
@@ -711,6 +946,7 @@ def _render_cell_content(cell: str) -> str:
     formatting, and joins them with '<br>' so each bullet appears on its
     own line — matching the PDF layout.
     """
+    cell = _fix_cell_subscripts(cell)
     if '\u2022' not in cell:           # no bullet character → fast path
         return _wrap_cell_math(_esc_html_math(cell))
 
@@ -928,42 +1164,42 @@ def _html_table(caption: str, headers: list, rows: list) -> str:
 body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 14px;
-    color: #e0e0e0;
-    background: transparent;
+    color: #1a1a1a;
+    background: #ffffff;
     padding: 4px 0;
 }}
 .tbl-caption {{
     font-weight: 700;
     margin-bottom: 8px;
     font-size: 14px;
-    color: #e0e0e0;
+    color: #212529;
 }}
 table {{
     border-collapse: collapse;
     width: 100%;
 }}
 th {{
-    background: #1e2130;
+    background: #2d3142;
     padding: 8px 12px;
     text-align: left;
     font-weight: 600;
-    border-bottom: 1px solid #555;
-    border-right: 1px solid #444;
-    color: #c8d0e0;
+    border-bottom: 2px solid #1a1d2e;
+    border-right: 1px solid #3d4157;
+    color: #ffffff;
     font-size: 13px;
 }}
-thead tr:last-child th {{ border-bottom: 2px solid #444; }}
+thead tr:last-child th {{ border-bottom: 2px solid #1a1d2e; }}
 th:last-child {{ border-right: none; }}
 td {{
     padding: 6px 12px;
-    border-bottom: 1px solid #333;
-    border-right: 1px solid #333;
+    border-bottom: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
     vertical-align: top;
-    color: #dce0ea;
+    color: #212529;
 }}
 td:last-child  {{ border-right: none; }}
 tr:last-child td {{ border-bottom: none; }}
-tr:nth-child(even) td {{ background: rgba(255,255,255,0.03); }}
+tr:nth-child(even) td {{ background: #f8f9fa; }}
 .katex {{ font-size: 1em; }}
 </style>
 </head>
@@ -1119,7 +1355,9 @@ def render_subclause_item(item: dict):
     marker = item.get("marker", "")
     value  = item.get("value", "")
 
-    col1, col2 = st.columns([1, 12])
+    # [1, 24] keeps the marker column narrow (~4% of width) so the gap between
+    # the marker and text stays compact regardless of content area width.
+    col1, col2 = st.columns([1, 24])
     with col1:
         st.markdown(
             f'<span class="sc-marker">{marker}</span>',
@@ -1253,31 +1491,78 @@ def render_clause(clause: dict, flags: dict, show_flag_ui: bool = True,
     cid        = clause["id"]
     is_flagged = cid in flags
     pages      = clause.get("page_span", [])
+    num        = clause.get("number", "")
+    title_text = clause.get("title", "")
+    note_refs  = clause.get("note_refs", [])
 
     if len(pages) == 1:
-        page_info = f"Page {pages[0]}"
+        page_info = f"p. {pages[0]}"
     elif len(pages) > 1:
-        page_info = f"Pages {pages[0]}–{pages[-1]}  (spans {len(pages)} pages)"
+        page_info = f"pp. {pages[0]}–{pages[-1]}"
     else:
         page_info = ""
-
-    # Header
-    st.markdown(f"""
-    <div class="clause-header">
-        <div class="clause-id">{cid} &nbsp;·&nbsp; {page_info}</div>
-        <div class="clause-title">{clause.get('number','')} &nbsp; {clause.get('title','')}</div>
-    </div>
-    """, unsafe_allow_html=True)
 
     # Flag warning
     if is_flagged:
         flag = flags[cid]
-        st.markdown(f"""
-        <div class="flag-indicator">
-            ⚑ <strong>Flagged:</strong> [{flag['issue_type']}] {flag.get('note','—')}
-            &nbsp;·&nbsp; {flag.get('flagged_at','?')[:10]}
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="flag-indicator">⚑ <strong>Flagged:</strong> [{flag["issue_type"]}] '
+            f'{flag.get("note","—")} &nbsp;·&nbsp; {flag.get("flagged_at","?")[:10]}</div>',
+            unsafe_allow_html=True,
+        )
+
+    # Hierarchy badge
+    hlabel = get_hierarchy_label(num)
+    if hlabel:
+        badge_cls = get_hierarchy_badge_class(hlabel)
+        st.markdown(
+            f'<span class="hierarchy-badge {badge_cls}">{hlabel}</span>',
+            unsafe_allow_html=True,
+        )
+
+    # Heading row: number + title, with see-note pills alongside
+    pill_notes = note_refs  # resolved shown as buttons, unresolved as badges
+    max_pills  = min(len(pill_notes), 4)
+
+    if pill_notes:
+        head_col, *pill_cols = st.columns([5] + [1.7] * max_pills)
+    else:
+        head_col  = st.container()
+        pill_cols = []
+
+    with head_col:
+        st.markdown(
+            f'<div class="clause-heading-block">'
+            f'<div class="clause-id-tag">{cid}&nbsp;&nbsp;{page_info}</div>'
+            f'<div class="clause-num-title">{num}&ensp;{title_text}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+    for i, nr in enumerate(pill_notes[:4]):
+        with pill_cols[i]:
+            note_ref   = nr.get("note_ref", "").rstrip(".")
+            resolved   = nr.get("resolved", False)
+            target_ids = nr.get("target_ids", [])
+            short_lbl  = (note_ref[:20] + "…") if len(note_ref) > 20 else note_ref
+            safe_key   = (note_ref.replace(" ", "_").replace(".", "_")
+                          .replace("(", "").replace(")", ""))
+            if resolved and target_ids:
+                if st.button(
+                    f"📄 {short_lbl}",
+                    key=f"pill_{cid}_{safe_key}_{i}",
+                    help=f"Appendix note: {note_ref}",
+                    use_container_width=True,
+                ):
+                    navigate_to(target_ids[0])
+                    st.rerun()
+            else:
+                st.markdown(
+                    f'<span class="note-external" '
+                    f'title="External appendix note — not in this PDF">'
+                    f'📄 {short_lbl}</span>',
+                    unsafe_allow_html=True,
+                )
 
     # ── Ordered content rendering ─────────────────────────────────────────────
     content = clause.get("content", [])
@@ -1307,11 +1592,6 @@ def render_clause(clause: dict, flags: dict, show_flag_ui: bool = True,
     references = clause.get("references", [])
     if references:
         render_references(references, clause_id=cid)
-
-    # ── Appendix note references ──────────────────────────────────────────────
-    note_refs = clause.get("note_refs", [])
-    if note_refs:
-        render_note_refs(note_refs, id_index=id_index, clause_id=cid)
 
     # ── QA flag UI ────────────────────────────────────────────────────────────
     if show_flag_ui:
@@ -1345,15 +1625,14 @@ def render_clause(clause: dict, flags: dict, show_flag_ui: bool = True,
 # ─────────────────────────────────────────────────────────────────────────────
 
 def main():
-    # Reset per-run inline note button key counters to avoid duplicate-key errors
-    # when the same note_ref appears multiple times in a single render pass.
+    # Reset per-run inline note button key counters.
     st.session_state["_inline_note_counts"] = {}
 
     doc   = load_document()
     flags = load_flags()
 
     if doc is None:
-        st.title("📋 Building Code Viewer")
+        st.title("Building Code Viewer")
         st.error("No structured document found.")
         st.info("Run:  `python main.py your_building_code.pdf`\n\n"
                 f"Expected: `{STRUCTURED_DOC_PATH}`")
@@ -1364,160 +1643,167 @@ def main():
     chapters    = doc.get("chapters", [])
     stats       = doc.get("_stats", {})
 
-    # Check if we have a navigation target from query params
+    # selected_section_id controls which section shows clause sub-items in the sidebar
+    if "selected_section_id" not in st.session_state:
+        if chapters and chapters[0].get("sections"):
+            st.session_state["selected_section_id"] = chapters[0]["sections"][0]["id"]
+        else:
+            st.session_state["selected_section_id"] = None
+
+    # Handle cross-reference navigation via query params
     nav_target = get_target_clause_id()
+    if nav_target:
+        node = id_index.get(nav_target)
+        if node:
+            ntype = node.get("_type")
+            if ntype == "clause":
+                _, sec = find_parent_section(nav_target, chapters)
+                if sec:
+                    st.session_state["selected_section_id"] = sec["id"]
+                st.session_state["scroll_target"] = nav_target
+                st.query_params.clear()
+                st.rerun()
+            elif ntype == "section":
+                st.session_state["selected_section_id"] = nav_target
+                st.session_state["scroll_target"] = nav_target
+                st.query_params.clear()
+                st.rerun()
+            elif ntype in ("figure", "table"):
+                parent = node.get("_parent_clause_id")
+                if parent:
+                    _, sec = find_parent_section(parent, chapters)
+                    if sec:
+                        st.session_state["selected_section_id"] = sec["id"]
+                    st.session_state["scroll_target"] = parent
+                    st.query_params.clear()
+                    st.rerun()
+        else:
+            st.query_params.clear()
 
     # ── Sidebar ───────────────────────────────────────────────────────────────
     with st.sidebar:
-        st.markdown(f"### 📋 {doc.get('title', 'Building Code')}")
-        st.caption(f"{doc.get('source_pdf', '')}  ·  "
-                   f"{doc.get('total_pages', '?')} pages")
+        st.markdown(f"**{doc.get('title', 'Building Code')}**")
+        st.caption(f"{doc.get('source_pdf', '')}  ·  {doc.get('total_pages', '?')} pages")
         st.divider()
-
-        total_sections   = sum(len(ch.get("sections", [])) for ch in chapters)
-        total_clauses    = len(clause_list)
-        total_figures    = sum(len(cl.get("figures", [])) for cl in clause_list)
-        total_equations  = sum(len(cl.get("equations", [])) for cl in clause_list)
-        total_tables     = sum(len(cl.get("tables", [])) for cl in clause_list)
-        flagged_count    = len(flags)
-
-        c1, c2 = st.columns(2)
-        c1.metric("Chapters",  len(chapters))
-        c2.metric("Sections",  total_sections)
-        c1.metric("Clauses",   total_clauses)
-        c2.metric("Tables",    total_tables)
-        c1.metric("Figures",   total_figures)
-        c2.metric("Equations", total_equations)
-
-        if flagged_count:
-            st.warning(f"🚩 {flagged_count} flagged")
-        else:
-            st.success("No issues flagged")
-
-        if stats:
-            rate = stats.get("resolution_rate_pct", 0)
-            st.metric("Ref resolution", f"{rate}%",
-                      f"{stats.get('resolved_references')}/"
-                      f"{stats.get('total_references')} refs")
-
-        st.divider()
-
-        # Clear navigation
-        if nav_target and st.button("✕ Clear navigation", use_container_width=True):
-            st.query_params.clear()
-            st.rerun()
 
         mode = st.radio(
             "View",
-            ["📑 Browse", "🔍 Search", "🚩 Flagged Issues", "📊 Stats & Raw"],
-            label_visibility="collapsed"
-        )
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # If we have a navigation target, jump to that clause
-    # ═══════════════════════════════════════════════════════════════════════════
-    if nav_target:
-        node = id_index.get(nav_target)
-        if node and node.get("_type") == "clause":
-            # Direct clause navigation
-            st.subheader(f"↗ {nav_target}")
-            breadcrumb = (f"Chapter {node.get('_chapter_number','?')} › "
-                          f"Section {node.get('_section_number','?')}")
-            st.caption(breadcrumb)
-            render_clause(node, flags, id_index=id_index)
-            return
-            # Section navigation — show all its clauses
-            st.subheader(f"↗ Section {node.get('number','?')} — {node.get('title','')}")
-            st.caption(f"Chapter {node.get('_chapter_number','?')}")
-            clauses = node.get("clauses", [])
-            if not clauses:
-                st.info("No clauses in this section.")
-            for cl in clauses:
-                with st.expander(
-                    f"{cl.get('number','?')} — {cl.get('title','')}",
-                    expanded=len(clauses) == 1
-                ):
-                    render_clause(cl, flags, id_index=id_index)
-            return
-            # Figure/Table navigation — jump to the parent clause
-            # and scroll to the relevant item
-            parent_id = node.get("_parent_clause_id", "")
-            parent_cl = id_index.get(parent_id)
-            item_type = node.get("_type").capitalize()
-            item_id   = node.get("id", nav_target)
-
-            if parent_cl:
-                st.subheader(f"↗ {item_type} {item_id}")
-                cap = node.get("caption", "") or node.get("id", "")
-                st.caption(
-                    f"{cap}  ·  "
-                    f"Chapter {node.get('_chapter_number','?')} › "
-                    f"Section {node.get('_section_number','?')}"
-                )
-                st.info(
-                    f"This {item_type.lower()} is inside clause "
-                    f"**{parent_cl.get('number','?')}**. "
-                    f"It is shown highlighted below."
-                )
-                render_clause(parent_cl, flags, id_index=id_index)
-            else:
-                st.warning(f"{item_type} `{item_id}` found but parent clause is missing.")
-            return
-
-        else:
-            # Truly not found — clear param and show browse
-            st.warning(f"Navigation target `{nav_target}` not found in document.")
-            st.query_params.clear()
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # BROWSE
-    # ═══════════════════════════════════════════════════════════════════════════
-    if mode == "📑 Browse":
-        st.title("📑 Document Browser")
-
-        if not chapters:
-            st.warning("No chapters found.")
-            return
-
-        ch_opts = {f"Chapter {ch['number']} — {ch['title']}": ch
-                   for ch in chapters}
-        chapter  = ch_opts[st.selectbox("Chapter", list(ch_opts.keys()))]
-        sections = chapter.get("sections", [])
-
-        if not sections:
-            st.warning("No sections in this chapter.")
-            return
-
-        sec_opts = {f"Section {s['number']} — {s['title']}": s
-                    for s in sections}
-        section = sec_opts[st.selectbox("Section", list(sec_opts.keys()))]
-        clauses = section.get("clauses", [])
-
-        if not clauses:
-            st.info("No clauses in this section.")
-            return
-
-        # Count content items for context
-        total_eq  = sum(len(cl.get("equations", [])) for cl in clauses)
-        total_fig = sum(len(cl.get("figures", [])) for cl in clauses)
-        total_tbl = sum(len(cl.get("tables", [])) for cl in clauses)
-
-        st.markdown(
-            f"**{len(clauses)} clause(s)** in section {section['number']}  "
-            f"· {total_eq} equations · {total_fig} figures · {total_tbl} tables"
+            ["📑 Browse", "🔍 Search", "📊 Stats & Raw"],
+            label_visibility="collapsed",
         )
         st.divider()
 
-        if len(clauses) <= 6:
-            tabs = st.tabs([cl.get("number") or cl["id"] for cl in clauses])
-            for tab, cl in zip(tabs, clauses):
-                with tab:
-                    render_clause(cl, flags, id_index=id_index)
-        else:
-            cl_opts = {f"{cl.get('number','?')} — {cl.get('title','')}": cl
-                       for cl in clauses}
-            sel_cl = st.selectbox("Clause", list(cl_opts.keys()))
-            render_clause(cl_opts[sel_cl], flags, id_index=id_index)
+        if mode == "📑 Browse":
+            sel_sec = st.session_state.get("selected_section_id")
+            for chapter in chapters:
+                part_label = f"Part {chapter['number']} — {chapter['title']}"
+                with st.expander(part_label, expanded=True):
+                    for section in chapter.get("sections", []):
+                        sec_num   = section.get("number", "")
+                        sec_title = section.get("title", "")
+                        depth     = len([p for p in sec_num.split('.') if p.strip()])
+                        indent    = "\u00a0\u00a0\u00a0\u00a0" * max(0, depth - 2)
+                        is_sel    = (sel_sec == section["id"])
+
+                        if st.button(
+                            f"{indent}{sec_num}  {sec_title[:36]}",
+                            key=f"tree_sec_{section['id']}",
+                            use_container_width=True,
+                            type="primary" if is_sel else "secondary",
+                        ):
+                            st.session_state["selected_section_id"] = section["id"]
+                            st.session_state["scroll_target"] = section["id"]
+                            st.rerun()
+
+                        # Expand clause sub-items for the selected section
+                        if is_sel:
+                            for cl in section.get("clauses", []):
+                                cl_num = cl.get("number", "")
+                                if not cl_num:
+                                    continue
+                                cl_depth  = len([p for p in cl_num.split('.') if p.strip()])
+                                cl_indent = "\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0" * max(0, cl_depth - 2)
+                                cl_title  = cl.get("title", "")[:28]
+                                if st.button(
+                                    f"{cl_indent}· {cl_num}  {cl_title}",
+                                    key=f"tree_cl_{cl['id']}",
+                                    use_container_width=True,
+                                ):
+                                    st.session_state["scroll_target"] = cl["id"]
+                                    st.rerun()
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # BROWSE — full document in one continuous scroll
+    # ═══════════════════════════════════════════════════════════════════════════
+    if mode == "📑 Browse":
+        # Top document header bar
+        doc_title = doc.get("title", "BC Building Code")
+        source    = doc.get("source_pdf", "")
+        pages     = doc.get("total_pages", "?")
+        st.markdown(
+            f'<div class="doc-top-bar">'
+            f'<div>'
+            f'<div class="doc-title">&#128203; {doc_title}</div>'
+            f'<div class="doc-subtitle">{source}&nbsp;&nbsp;·&nbsp;&nbsp;{pages} pages</div>'
+            f'</div>'
+            f'<div class="doc-nav-hint">Use sidebar to navigate &amp; jump to sections</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+        # Render ALL parts → sections → clauses in one scroll
+        for chapter in chapters:
+            # Anchor for this part
+            st.markdown(f'<div id="anchor-{chapter["id"]}"></div>', unsafe_allow_html=True)
+
+            # Part card
+            st.markdown(
+                f'<div class="part-card">'
+                f'<div class="part-card-badge">Part {chapter["number"]}</div>'
+                f'<div class="part-card-title">{chapter["title"]}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+            for section in chapter.get("sections", []):
+                sec_id    = section["id"]
+                sec_num   = section.get("number", "")
+                sec_title = section.get("title", "")
+                sec_label = get_hierarchy_label(sec_num)
+
+                # Anchor for this section
+                st.markdown(f'<div id="anchor-{sec_id}"></div>', unsafe_allow_html=True)
+
+                # Section header
+                st.markdown(
+                    f'<div class="section-header">'
+                    f'<span class="sec-badge">{sec_label}</span>'
+                    f'{sec_num}&nbsp;&nbsp;{sec_title}'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+
+                for clause in section.get("clauses", []):
+                    cid = clause["id"]
+                    st.markdown(f'<div id="anchor-{cid}"></div>', unsafe_allow_html=True)
+                    render_clause(clause, flags, show_flag_ui=False, id_index=id_index)
+                    st.markdown(
+                        '<hr style="margin:6px 0 14px 0;border:none;border-top:1px solid #f0f0f0;">',
+                        unsafe_allow_html=True,
+                    )
+
+        # Inject JS scroll to the requested anchor
+        scroll_target = st.session_state.pop("scroll_target", None)
+        if scroll_target:
+            st.components.v1.html(
+                f"""<script>
+                setTimeout(function() {{
+                    var el = window.parent.document.getElementById('anchor-{scroll_target}');
+                    if (el) el.scrollIntoView({{behavior:'smooth', block:'start'}});
+                }}, 400);
+                </script>""",
+                height=0,
+            )
 
     # ═══════════════════════════════════════════════════════════════════════════
     # SEARCH
@@ -1533,7 +1819,6 @@ def main():
             term    = query.lower()
             results = []
             for cl in clause_list:
-                # Search in number, title, and all text content items
                 content_text = " ".join(
                     item.get("value", "") + item.get("latex", "")
                     for item in cl.get("content", [])
@@ -1561,51 +1846,11 @@ def main():
 
                     label = (
                         f"**{cl.get('number','?')}** — {cl.get('title','')}  "
-                        f"*(Ch {cl['_chapter_number']} › {cl['_section_number']})*"
+                        f"*(Part {cl['_chapter_number']} › {cl['_section_number']})*"
                         f"  {badge_str}"
                     )
                     with st.expander(label):
                         render_clause(cl, flags, id_index=id_index)
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # FLAGGED ISSUES
-    # ═══════════════════════════════════════════════════════════════════════════
-    elif mode == "🚩 Flagged Issues":
-        st.title("🚩 Flagged Extraction Issues")
-
-        if not flags:
-            st.success("No issues flagged yet.")
-            return
-
-        st.markdown(f"**{len(flags)} issue(s) flagged.**")
-        st.download_button(
-            "⬇ Download flagged_issues.json",
-            data=json.dumps(flags, indent=2),
-            file_name="flagged_issues.json",
-            mime="application/json"
-        )
-        st.divider()
-
-        by_type = {}
-        for cid, flag in flags.items():
-            t = flag.get("issue_type", "Other")
-            by_type.setdefault(t, []).append((cid, flag))
-
-        for issue_type, items in sorted(by_type.items()):
-            st.markdown(f"#### {issue_type} ({len(items)})")
-            for cid, flag in items:
-                node = id_index.get(cid)
-                if node:
-                    with st.expander(
-                        f"**{node.get('number', cid)}** — {node.get('title', '')}"
-                    ):
-                        st.markdown(
-                            f"**Note:** {flag.get('note','—')}  "
-                            f"|  **Flagged:** {flag.get('flagged_at','?')[:10]}"
-                        )
-                        render_clause(node, flags, show_flag_ui=True, id_index=id_index)
-                else:
-                    st.warning(f"`{cid}` not in current document.")
 
     # ═══════════════════════════════════════════════════════════════════════════
     # STATS & RAW
@@ -1614,15 +1859,15 @@ def main():
         st.title("📊 Extraction Statistics")
 
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Pages",     doc.get("total_pages", "?"))
-        c2.metric("Chapters",  len(chapters))
-        c3.metric("Sections",  sum(len(ch.get("sections", [])) for ch in chapters))
-        c4.metric("Clauses",   len(clause_list))
+        c1.metric("Pages",    doc.get("total_pages", "?"))
+        c2.metric("Parts",    len(chapters))
+        c3.metric("Sections", sum(len(ch.get("sections", [])) for ch in chapters))
+        c4.metric("Clauses",  len(clause_list))
 
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Equations", sum(len(cl.get("equations",[])) for cl in clause_list))
-        c2.metric("Figures",   sum(len(cl.get("figures",[])) for cl in clause_list))
-        c3.metric("Tables",    sum(len(cl.get("tables",[])) for cl in clause_list))
+        c1.metric("Equations", sum(len(cl.get("equations", [])) for cl in clause_list))
+        c2.metric("Figures",   sum(len(cl.get("figures",   [])) for cl in clause_list))
+        c3.metric("Tables",    sum(len(cl.get("tables",    [])) for cl in clause_list))
         c4.metric("🚩 Flagged", len(flags))
 
         st.divider()
@@ -1638,7 +1883,6 @@ def main():
             c3.metric("Rate", f"{rate}%")
             st.progress(int(rate) / 100)
 
-            # Note references
             total_notes    = stats.get("total_note_refs", 0)
             resolved_notes = stats.get("resolved_note_refs", 0)
             note_rate      = stats.get("note_resolution_rate_pct", 0)
@@ -1663,22 +1907,21 @@ def main():
                              use_container_width=True, hide_index=True)
 
         st.divider()
-        st.subheader("Per-Chapter Breakdown")
+        st.subheader("Per-Part Breakdown")
         rows = []
         for ch in chapters:
             secs = ch.get("sections", [])
             cls  = [cl for s in secs for cl in s.get("clauses", [])]
             rows.append({
-                "Chapter":   f"{ch['number']} — {ch['title']}",
+                "Part":      f"{ch['number']} — {ch['title']}",
                 "Sections":  len(secs),
                 "Clauses":   len(cls),
-                "Equations": sum(len(cl.get("equations",[])) for cl in cls),
-                "Figures":   sum(len(cl.get("figures",[])) for cl in cls),
-                "Tables":    sum(len(cl.get("tables",[])) for cl in cls),
+                "Equations": sum(len(cl.get("equations", [])) for cl in cls),
+                "Figures":   sum(len(cl.get("figures",   [])) for cl in cls),
+                "Tables":    sum(len(cl.get("tables",    [])) for cl in cls),
                 "Flagged":   sum(1 for cl in cls if cl["id"] in flags),
             })
-        st.dataframe(pd.DataFrame(rows),
-                     use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
         st.divider()
         st.subheader("Downloads")
@@ -1686,25 +1929,23 @@ def main():
             "⬇ Download structured_document.json",
             data=json.dumps(doc, indent=2),
             file_name="structured_document.json",
-            mime="application/json"
+            mime="application/json",
         )
 
-        raw_path = Path("storage") / \
-                   f"raw_{Path(doc.get('source_pdf', '')).stem}.json"
+        raw_path = Path("storage") / f"raw_{Path(doc.get('source_pdf', '')).stem}.json"
         if raw_path.exists():
             raw_text = raw_path.read_text(encoding="utf-8")
             st.download_button(
                 f"⬇ Download {raw_path.name}",
                 data=raw_text,
                 file_name=raw_path.name,
-                mime="application/json"
+                mime="application/json",
             )
             with st.expander("Preview raw JSON (first 200 lines)"):
                 lines = raw_text.splitlines()
                 st.code(
-                    "\n".join(lines[:200]) +
-                    ("\n..." if len(lines) > 200 else ""),
-                    language="json"
+                    "\n".join(lines[:200]) + ("\n..." if len(lines) > 200 else ""),
+                    language="json",
                 )
         else:
             st.info(f"Raw cache not found at `{raw_path}`.")

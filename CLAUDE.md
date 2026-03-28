@@ -17,6 +17,8 @@ A pipeline that extracts, structures, and serves **building code PDFs** (e.g. BC
 
 **Dependencies** (`requirements.txt`): `requests`, `anthropic`, `pdfplumber`, `pymupdf`, `fastapi`, `uvicorn`, `python-multipart`, `python-dotenv`, `streamlit`, `pandas`
 
+> **Note:** `pdfplumber` and `pymupdf` are listed in `requirements.txt` but are **not imported anywhere** in the current codebase. The pipeline uses the Datalab API for PDF extraction. These are legacy dependencies from an earlier approach and can be removed.
+
 ---
 
 ## Project File Map
@@ -26,6 +28,11 @@ buildingCodeWebProject/
 ├── viewer_streamlit.py            # Streamlit document viewer/QA tool
 ├── .env                           # DATALAB_API_KEY, ANTHROPIC_API_KEY
 ├── requirements.txt
+├── bcbc_2024_Part4-509-654.pdf    # Sample BCBC Part 4 PDF (pages 509-654)
+│
+├── docs/
+│   ├── GUIDE.docx                 # Project usage guide
+│   └── GUIDE.html                 # HTML version of guide
 │
 ├── ingestion/
 │   └── datalab_client.py          # Submit PDF → poll Datalab API → cache → return JSON
@@ -143,8 +150,9 @@ Document
 | `_find_figure_caption(siblings, fig_idx, alt_text)` | 4-step bidirectional caption search |
 | `_flatten_legacy(datalab_result)` | Fallback for old Datalab format or markdown-only responses |
 | `_detect_title(blocks)` | Returns first h1 heading text, or `"Building Code Document"` |
-| `_parse_part_heading(text)` | Parses Part/Chapter number and title from h1 text |
+| `_parse_part_heading(text)` | Parses Part/Chapter number and title from h1 text; increments `_chapter_counter` |
 | `_make_clause(number, title, page, section)` | Creates a Clause and appends it to `section.clauses` |
+| `_clause_id_for(number)` | Returns `CL-{number}` for numbered clauses; `CL-AUTO-{n}` (using `_auto_clause_counter`) for unnumbered |
 | `_remove_empty_clauses(chapters)` | Drops clauses with no content, figures, tables, or equations |
 | `_merge_continued_tables(chapters)` | Merges cross-page `(continued)` table fragments; applies cross-page rowspan carry |
 | `to_dict(document)` | Thin wrapper — calls `asdict(document)` to return JSON-serializable dict |
@@ -158,8 +166,11 @@ Document
 - `Caption` → math-aware: uses `inline_math_to_markdown()` if `<math>` present, else `strip_html()`; buffered for next table
 - `PageHeader`/`PageFooter` → skipped
 
-**Decorative image filtering** (applied in both `_flatten_blocks` and `_build_hierarchy`):
-Skips image if alt text is **< 60 characters** AND the text starts with or exactly matches one of: `"horizontal line"`, `"vertical line"`, `"divider"`, `"separator"`, `"solid black line"`, `"decorative"`. The figure counter is decremented when a decorative image is skipped.
+**Decorative image filtering — two stages with different keyword sets:**
+
+In `_flatten_blocks`: skips Figure/Picture blocks where `alt_text.lower()` is an **exact match** for any of: `"horizontal line"`, `"vertical line"`, `"divider"`, `"line"`, `"rule"`, `"separator"`. No length check.
+
+In `_build_hierarchy`: skips figure blocks where alt text is **< 60 characters** AND the text starts with or exactly matches one of: `"horizontal line"`, `"vertical line"`, `"divider"`, `"separator"`, `"solid black line"`, `"decorative"`. The figure counter is decremented when a decorative image is skipped in either stage.
 
 **`_find_figure_caption()` — 4-step search:**
 1. Check block immediately **before** — if `Caption`, use it
@@ -190,7 +201,8 @@ If `has_inline_math`, runs `inline_math_to_markdown()` on raw HTML first; then s
 - `_merge_continued_tables()` — merges cross-page `(continued)` table fragments into base table; applies cross-page rowspan carry (sandwich detection for 2-col use/load tables)
 
 **`parse_table_html()` — special header collapse rules:**
-- **Final-row sub-label skip**: In the column-name collapse loop, when `row_i == n_rows - 1` AND the label is ≤4 chars AND matches `^[0-9A-Z]+$` AND the column already has a longer label, the label is skipped. Handles Datalab underreporting rowspan (e.g. Table 4.1.7.6).
+- **Final-row sub-label skip**: In the column-name collapse loop, when `col == 0` AND `row_i == n_rows - 1` AND the label is ≤4 chars AND matches `^[0-9A-Z]+$` AND the column already has a longer label, the label is skipped. Only applies to col 0 — data columns always keep their final-row labels. Handles Datalab underreporting rowspan (e.g. Table 4.1.7.6).
+- **Spanning-rows detection**: Rows with a single new cell whose colspan > 1 are recorded in a `spanning_rows` set. However, this set is **not** used to restrict labels to col 0 — spanning row labels appear in all their columns via the normal label-grid collapse. The `spanning_rows` set is computed for documentation purposes; the actual filtering is only the final-row sub-label skip above.
 - **Spanning-rows last-row exception**: The spanning subheader detection skips `row_i == n_rows - 1`. The last header row is never treated as a spanning subheader — it is the primary data descriptor and must appear in all columns (e.g. "Value of C_b" in Table 4.1.6.2.-B).
 
 ### Regex Patterns
@@ -250,9 +262,9 @@ Claude model: `claude-sonnet-4-20250514`
 | `get_claude_client()` | Creates `anthropic.Anthropic()` client; raises `EnvironmentError` if key missing | — |
 | `ask_claude(prompt)` | Base call | 1024 |
 | `label_table_columns(headers, rows)` | Semantic column labels → `column_semantics[]` | 400 |
-| `classify_block(text, ctx_before, ctx_after)` | Classify as clause/continuation/paragraph/list_item | 200 |
-| `should_join_fragments(end, start)` | Detect cross-page list continuation | 10 |
-| `resolve_ambiguous_reference(ref, clause_text, ids)` | Resolve "see above table"-style refs | 100 |
+| `classify_block(text, ctx_before, ctx_after)` | Classify as clause/continuation/paragraph/list_item (**not called by pipeline**) | 200 |
+| `should_join_fragments(end, start)` | Detect cross-page list continuation (**not called by pipeline**) | 10 |
+| `resolve_ambiguous_reference(ref, clause_text, ids)` | Resolve "see above table"-style refs (**not called by pipeline**) | 100 |
 | `enhance_document(doc, use_ai_for_tables)` | Main entry; walks all tables, adds `column_semantics[]` | — |
 
 All functions strip markdown fences from Claude responses before JSON parsing; fall back to sensible defaults on parse errors.
@@ -295,16 +307,17 @@ All functions strip markdown fences from Claude responses before JSON parsing; f
 
 Run: `streamlit run viewer_streamlit.py` → opens at http://localhost:8501
 
-**4 modes (sidebar radio):**
-- **Browse** (📑) — Chapter → Section → Clause navigation; tabs for ≤6 clauses, selectbox for more
-- **Search** (🔍) — Full-text search across clause number, title, and all `content[]` text/LaTeX items (up to 30 results)
-- **Flagged Issues** (🚩) — Review QA flags by issue type; export JSON
-- **Stats & Raw** (📊) — Per-chapter breakdown, reference resolution stats, per-clause unresolved refs table, raw JSON download
+**3 modes (sidebar radio):**
+- **Browse** (📑) — Continuous-scroll rendering of all chapters, sections, and clauses; sidebar tree expander for navigation; JS scroll injection to jump to a target clause
+- **Search** (🔍) — Client-side full-text search over `clause_list` (not the FastAPI endpoint); caps at 30 results; matching clauses rendered in expandable sections
+- **Stats & Raw** (📊) — Per-chapter breakdown, reference resolution stats, per-clause unresolved refs table, raw JSON download and preview
+
+> **Note:** A "🚩 Flagged Issues" mode was previously planned. The QA flag data structures (`save_flag`, `remove_flag`, `load_flags`, `FLAGS_PATH`) are fully implemented, and per-clause flag UI is embedded inside `render_clause()`, but there is no dedicated sidebar mode for reviewing all flags by issue type.
 
 ### Index Builders (viewer-local)
 | Function | Purpose |
 |---|---|
-| `build_id_index(doc)` | Flat `{id→node}` lookup; FIG-/TBL- nodes get `_parent_clause_id` for navigation |
+| `build_id_index(doc)` | Flat `{id→node}` lookup; FIG-/TBL- nodes get `_parent_clause_id` for navigation; all nodes get `_type` and parent breadcrumb metadata |
 | `build_clause_list(doc)` | Flat list of all clauses with parent chapter/section context |
 
 ### Content Rendering
@@ -313,32 +326,45 @@ Run: `streamlit run viewer_streamlit.py` → opens at http://localhost:8501
 |---|---|---|
 | `text` (plain) | `st.markdown()` | Inline `$...$` renders as KaTeX |
 | `text` (where line) | Indented italic block | Lines starting with "where" / "where:" |
-| `text` (variable def) | Two-column: symbol \| description | Detects `$symbol$ = ...` or `symbol = ...` pattern |
+| `text` (variable def) | Two-column: symbol \| description | Detects `$symbol$ = ...` or `symbol = ...` pattern; pre-processes space-subscript notation via regex |
 | `text` (inline note) | `_render_text_with_inline_notes()` | Splits at `(See Note A-...)` and renders as buttons |
+| `text` (roman numeral sub-clause) | `render_subclause_item()` | Pattern `^([ivxlcdm]{2,})\)\s+(.+)$` detected inside `render_text_item` |
+| `text` (embedded sub-clause) | Split + `render_subclause_item()` | `RE_EMBEDDED_SC` / `RE_GLUED_SC` patterns detect sub-clause markers glued to preceding text |
+| `text` (unit superscripts) | `st.markdown()` with `$m^{2}$` substitution | `mm`/`km`/`m` + ` 2`/ ` 3` converted when no existing `$` or `\` |
 | `equation` | `st.latex()` (display math) | Code block fallback if malformed |
 | `figure` | `st.image()` + caption + alt text | Container with border & styling; alt text truncated to 200 chars |
 | `table` | Custom HTML + KaTeX via `st.components.v1.html()` | Renders `$...$` with KaTeX CDN v0.16.9; visual rowspans applied |
-| `sub_clause` | Two-column flex: marker \| markdown value | Inline math converted via `_value_with_inline_math()` |
+| `sub_clause` | Two-column flex: marker \| markdown value | Inline math converted via `_value_with_inline_math()`; column ratio `[1, 24]` |
 
 ### Table Rendering (`_html_table()`)
-Tables are rendered as self-contained HTML (not `st.dataframe()`) to support math:
-- `_split_math_segments(s)`: splits a string into `(segment, is_math)` tuples based on `$...$` delimiters. Used by `_wrap_cell_math()` and `_value_with_inline_math()` to avoid double-wrapping already-delimited math regions.
-- `_wrap_cell_math()`: wraps LaTeX expressions in cells with `$...$`. Uses `_split_math_segments` — only processes plain-text segments, leaves existing `$...$` regions untouched. (Previously applied COMBINED_RE to the whole string including existing `$...$` regions, breaking them.)
-- `_build_tbody_with_rowspan()`: applies visual `rowspan` to consecutive identical values in cols 0–1
-- `_esc_html_math()`: HTML-escapes text while preserving `$...$` regions intact
-- `_value_with_inline_math()`: uses `_split_math_segments` — the inner `_wrap_raw_text()` function is applied only to non-math segments. (Previously applied COMBINED_RE to the whole string, breaking existing `$...$` regions.)
-- Height estimated dynamically: `header_h` computed from `max_h_len // approx_col_width_chars * 24 + 30` (varies with column count and header text length); `est_height = header_h + rows * row_h + 40 + 16`. (Previously used a fixed 90px header height.)
-- Rendered via `st.components.v1.html()` with `scrolling=True`. (Previously `scrolling=False`.)
+Tables are rendered as self-contained HTML documents (not `st.dataframe()`) to support math. `_html_table()` returns a **tuple `(html_str, est_height)`** consumed by `st.components.v1.html(html_doc, height=height, scrolling=True)`.
+
+Helper functions:
+- `_split_math_segments(s)`: splits a string into `(segment, is_math)` tuples based on `$...$` delimiters. KaTeX validity rules applied (opening `$` must not be followed by whitespace; closing `$` must not be preceded by whitespace). Used by `_wrap_cell_math()` and `_value_with_inline_math()` to avoid double-wrapping already-delimited math regions.
+- `_wrap_cell_math()`: wraps LaTeX expressions in cells with `$...$`. Uses `_split_math_segments` — only processes plain-text segments, leaves existing `$...$` regions untouched. Uses `COMBINED_RE` + `OP_ONLY` bridge detection for token-level greedy merging; display commands (`\frac`, `\sum`, etc.) trigger whole-cell wrap.
+- `_fix_cell_subscripts(cell)`: pre-processes table cell text for **uppercase multi-letter subscripts** — pattern `r'(?<![_^{\\])([A-Za-z])\s([A-Z]{2,5})\b'` → converts e.g. `L XC` → `L_{XC}`. Handles 2–5 uppercase char subscripts; single-char subscripts handled by `_wrap_cell_math`.
+- `_esc_html_math()`: HTML-escapes `&`, `<`, `>` outside `$...$`; inside math only escapes `&`. Uses a simple `$...$` scan (not `_split_math_segments`).
+- `_render_cell_content(cell)`: calls `_fix_cell_subscripts` first; handles bullet characters (`•`) in table cells — splits on `•`, renders each bullet on its own line via `<br>`, applies math wrapping to each segment.
+- `_build_tbody_with_rowspan()`: applies visual `rowspan` to consecutive identical values in cols 0–1 (max span 30).
+- `_build_hierarchical_thead(headers)`: reconstructs multi-row `<thead>` from header strings that use `' / '` as a hierarchy separator (e.g. `"Factors / Arch / $C_a$ Downwind"`). Returns `(thead_html_str, num_header_rows)`. Intermediate cells get `colspan` for shared path prefixes; leaf cells get `rowspan` to fill remaining rows. Falls back to single-row `<thead>` if no `' / '` found.
+- `_recover_vardef_subscripts(text)`: recovers subscript notation lost when the parser stripped `<sub>` tags — pattern `r'(?<!\w)([A-Za-z])\s([a-z]{1,5})(?!\w)'` converts e.g. `C w` → `$C_{w}$`. Applied to variable-definition descriptions; only processes non-math segments via `_split_math_segments`.
+- `_value_with_inline_math()`: converts raw LaTeX tokens in sub-clause text to `$...$`; uses `_split_math_segments` to leave existing `$...$` regions untouched.
+- Height estimated dynamically: `header_h` uses the longest individual-level label (not the full `' / '`-joined string for hierarchical headers); `row_h` = 56/40/30 based on max cell length; `est_height = header_h + rows * row_h + caption_h + 16`.
 
 ### Reference Rendering
 - **Standard refs:** resolved → clickable button (max 4 per row) → `navigate_to()` + `st.rerun()`; unresolved → grey badge
-- **Note refs:** resolved → green button(s); multiple target_ids → one button per target; unresolved → amber badge. Button label always uses `note_ref` directly — the previous title-extraction override (which read the CL-AUTO clause's title to derive an A- identifier) was removed because it produced wrong labels when multiple note refs resolved to the same CL-AUTO clause (e.g. `A-4.1.6.16` content embedded in CL-AUTO-49 whose title is `A-4.1.6.9`).
+- **Note refs:** resolved → green button(s); single target → button labeled `note_ref`; multiple target_ids → one button per target labeled `"{note_ref} [{j+1}]"`; unresolved → amber badge. Button label uses `note_ref` directly (not derived from the CL-AUTO clause title, which may represent a different embedded sub-note).
 
 ### Inline Note Pattern Fixes (`viewer_streamlit.py`)
-All three inline note regex patterns (lines ~349, ~375, ~395) use `\d+(?:\.\d+)*` instead of `[\d\.]+` to correctly capture sub-note identifiers like `A-4.1.6.16.(6)`. The old `[\d\.]+` greedily consumed the trailing dot and prevented the sub-number suffix from being matched.
+All three inline note regex patterns use `\d+(?:\.\d+)*` instead of `[\d\.]+` to correctly capture sub-note identifiers like `A-4.1.6.16.(6)`. The old `[\d\.]+` greedily consumed the trailing dot and prevented the sub-number suffix from being matched.
 
 ### Navigation via Query Params
-`?clause=CL-...` deep-links to a clause; figures/tables navigate to parent clause via `_parent_clause_id`. `navigate_to(id)` sets `st.query_params["clause"]`.
+`?clause=CL-...` deep-links to any node. `navigate_to(id)` sets `st.query_params["clause"]`. The navigation handler uses `if/elif/elif` branching on `_type`:
+- `_type == "clause"`: finds parent section → sets `selected_section_id` + `scroll_target` → `st.rerun()`
+- `_type == "section"`: sets `selected_section_id` + `scroll_target` → `st.rerun()`
+- `_type in ("figure", "table")`: resolves `_parent_clause_id` → sets section + scroll_target → `st.rerun()`
+
+All three branches are reachable (no `return` before the elif branches). The `st.rerun()` call in the clause branch exits the run but control does not fall through to other branches.
 
 **QA flag types:** `Missing text`, `Wrong hierarchy`, `Table error`, `Sub-clause split wrong`, `Equation wrong`, `Figure missing`, `Figure wrong position`, `Reference not resolved`, `Wrong page number`, `Other`
 
@@ -375,7 +401,7 @@ Periods in numbers are replaced with hyphens in IDs: `4.1.6.5` → `CL-4-1-6-5`.
 - **Bidirectional caption search**: figure captions looked up before, after, and via "Notes to Figure" heading
 - **Table merging**: cross-page `(continued)` fragments merged into base table; cross-page rowspan carry via sandwich detection
 - **Rowspan/colspan parsing**: multi-row `<thead>` with label grid collapsing; `<tbody>` rowspan carry dict; bbox-based carry for Datalab-missing rowspan attrs
-- **Decorative image filtering**: skips images where alt text is <60 chars and starts with/matches `"horizontal line"`, `"vertical line"`, `"divider"`, `"separator"`, `"solid black line"`, `"decorative"`; figure counter decremented on skip
+- **Decorative image filtering**: two-stage with different keyword sets — `_flatten_blocks` uses exact-match on `"horizontal line"`, `"vertical line"`, `"divider"`, `"line"`, `"rule"`, `"separator"`; `_build_hierarchy` uses <60 char check + starts_with/exact for `"horizontal line"`, `"vertical line"`, `"divider"`, `"separator"`, `"solid black line"`, `"decorative"`; figure counter decremented on skip
 - **Orphaned figure handling**: creates a minimal holder clause when a figure block has no active clause
 - **Storage is file-based** — `document_store.py` noted as swap candidate for PostgreSQL/SQLite
 - **Reference normalization**: dots/hyphens stripped for fuzzy caption matching (handles PDF typos)
@@ -384,9 +410,15 @@ Periods in numbers are replaced with hyphens in IDs: `4.1.6.5` → `CL-4-1-6-5`.
 - **Inline note viewer regex**: same `\d+(?:\.\d+)*` fix applied to all three inline note patterns in `viewer_streamlit.py`
 - **Table cell math safety**: `_wrap_cell_math()` and `_value_with_inline_math()` use `_split_math_segments()` to avoid double-wrapping existing `$...$` regions
 - **Table scrolling**: tables rendered with `scrolling=True` in `st.components.v1.html()`
-- **Table height estimation**: header height computed dynamically from column count and text length instead of a fixed 90px constant
+- **Table height estimation**: header height computed dynamically from column count and text length; hierarchical headers use individual level labels (not full `' / '`-joined string) for estimation
+- **Hierarchical table headers**: parser stores multi-level column names joined with `' / '`; viewer's `_build_hierarchical_thead()` reconstructs proper `<thead>` rows with `colspan`/`rowspan`
+- **Table bullet cells**: `_render_cell_content()` splits on `•` and renders each bullet on its own line
 - **Deduplication**: reference linker tracks `(kind, ref)` tuples per clause; note linker tracks `note_ref` per clause
 - **`note_refs[]` is dynamic**: not part of the `Clause` dataclass — added to the dict by `reference_linker.link_references()`
+- **Navigation**: all three branches (clause, section, figure/table) in the `if nav_target:` block are reachable via `if/elif/elif`; `st.rerun()` exits the current run rather than falling through
+- **Subscript recovery**: `_recover_vardef_subscripts()` in the viewer re-creates `$X_{sub}$` notation for variable definitions where `<sub>` tags were stripped by the parser
+- **Table cell subscript fix**: `_fix_cell_subscripts()` handles 2–5 uppercase-char subscript patterns (e.g. `L XC` → `L_{XC}`) before math wrapping; complements the single-char handling in `_wrap_cell_math()`
+- **Unused AI functions**: `classify_block()`, `should_join_fragments()`, and `resolve_ambiguous_reference()` in `ai_enhancer.py` are defined but not called anywhere in the current pipeline — available for future use
 
 ---
 
@@ -416,3 +448,6 @@ streamlit run viewer_streamlit.py
 - Diff view between two versions of a building code
 - Clause comparison across documents
 - AI-powered Q&A over the document (RAG)
+- Add "🚩 Flagged Issues" sidebar mode to expose existing flag data (`save_flag`, `load_flags`, `remove_flag` are implemented; only missing the dedicated viewer panel)
+- Wire up unused AI pipeline functions (`classify_block`, `should_join_fragments`, `resolve_ambiguous_reference`) or remove them
+- Remove unused `pdfplumber` and `pymupdf` dependencies from `requirements.txt`

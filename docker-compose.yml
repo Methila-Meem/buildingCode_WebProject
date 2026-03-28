@@ -1,0 +1,26 @@
+services:
+  viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - ./storage/output:/app/storage/output
+      - ./storage/figures:/app/storage/figures
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./storage/output:/app/storage/output
+      - ./storage/figures:/app/storage/figures
